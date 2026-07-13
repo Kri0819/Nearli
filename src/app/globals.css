@@ -1,0 +1,31 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body {
+  background-color: #faf7f2;
+  color: #2e3844;
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
+}
+
+body {
+  max-width: 480px;
+  margin: 0 auto;
+  min-height: 100dvh;
+}
+
+::selection {
+  background-color: #c3e5eb;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}
