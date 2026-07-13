@@ -66,10 +66,22 @@ function safeWrite<T>(key: string, data: T): boolean {
 
 // ---- Trips ----
 
+/**
+ * v0.1.1 migration：Trip 新增 `actualPrepStartTime` 欄位。
+ * 舊資料（schemaVersion 1）沒有這個欄位，讀取時一律補上 null，
+ * 確保舊行程也能安全在新版首頁顯示，不會因為欄位缺漏而出錯。
+ */
+function normalizeTrip(trip: Trip): Trip {
+  return {
+    ...trip,
+    actualPrepStartTime: trip.actualPrepStartTime ?? null,
+  };
+}
+
 export function loadTrips(): Trip[] {
   const hasOnboarded = isBrowser() ? window.localStorage.getItem(KEYS.onboarded) : "1";
   const fallback = hasOnboarded ? [] : [createSampleTrip()];
-  const trips = safeRead<Trip[]>(KEYS.trips, fallback);
+  const trips = safeRead<Trip[]>(KEYS.trips, fallback).map(normalizeTrip);
   if (!hasOnboarded && isBrowser()) {
     window.localStorage.setItem(KEYS.onboarded, "1");
     safeWrite(KEYS.trips, trips);

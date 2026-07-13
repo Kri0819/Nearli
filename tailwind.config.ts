@@ -5,6 +5,8 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
+        // 桌面版背景，比 App 畫布（cream）稍深一點
+        page: "#efe6d6",
         // 柔和水藍主色
         aqua: {
           50: "#f2fafb",

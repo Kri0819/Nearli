@@ -1,9 +1,11 @@
-# 未命名行程助手（v0.1.0）
+# 未命名行程助手（v0.1.1）
 
 > 這不是普通行事曆，也不是導航 App。
 > 告訴我幾點要真正抵達，我幫你倒推幾點該開始準備、幾點必須出門。
 
 程式正式名稱尚未決定，目前顯示名稱統一放在 `src/config/app.ts`，之後命名只需要改這一個檔案。
+
+**v0.1.1**：首頁改為依行程階段（尚未準備／該準備／準備中／已出發）動態顯示最重要的時間與動作；BottomNav 改用 `lucide-react` 圖示；全站改為桌面置中、手機滿版的畫布結構。詳見本檔案最後的版本紀錄。
 
 ## 安裝與啟動
 
@@ -103,6 +105,7 @@ itinerary-app/
     │   ├── dateUtils.ts
     │   ├── id.ts
     │   ├── learningEngine.ts
+    │   ├── liveStatus.ts
     │   ├── mapsAdapter.ts
     │   ├── parkingEstimator.ts
     │   ├── pushAdapter.ts

@@ -25,6 +25,9 @@ export interface Trip {
   /** 完成後的簡單回顧結果（見 learning.ts） */
   reviewCompletedAt: string | null;
 
+  /** 使用者按下「開始準備」的實際時間，尚未開始則為 null（v0.1.1 新增） */
+  actualPrepStartTime: string | null;
+
   createdAt: string;
   updatedAt: string;
 }
@@ -43,6 +46,7 @@ export function createEmptyTrip(): Trip {
     stops: [],
     completed: false,
     reviewCompletedAt: null,
+    actualPrepStartTime: null,
     createdAt: now,
     updatedAt: now,
   };

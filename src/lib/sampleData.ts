@@ -117,6 +117,7 @@ export function createSampleTrip(): Trip {
     stops,
     completed: false,
     reviewCompletedAt: null,
+    actualPrepStartTime: null,
     createdAt: now,
     updatedAt: now,
   };

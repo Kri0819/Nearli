@@ -12,6 +12,10 @@ export function isTripFullyArrived(trip: Trip): boolean {
   return trip.stops.length > 0 && trip.stops.every((s) => Boolean(s.actualArrivalTime));
 }
 
+export function markPrepStarted(trip: Trip): Trip {
+  return { ...trip, actualPrepStartTime: new Date().toISOString() };
+}
+
 export function markStopDeparted(trip: Trip, stopId: string): Trip {
   const now = new Date().toISOString();
   return {

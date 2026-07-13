@@ -4,7 +4,8 @@
 
 html,
 body {
-  background-color: #faf7f2;
+  height: 100%;
+  background-color: #efe6d6; /* page（桌面版背景） */
   color: #2e3844;
 }
 
@@ -12,14 +13,24 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
-body {
-  max-width: 480px;
-  margin: 0 auto;
-  min-height: 100dvh;
-}
-
 ::selection {
   background-color: #c3e5eb;
+}
+
+/* 卡片內容切換時的柔和淡入，不做過度動畫 */
+.fade-in {
+  animation: fade-in 220ms ease-out;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(2px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
