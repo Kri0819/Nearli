@@ -9,23 +9,17 @@ import { TripReview } from "@/components/trip/TripReview";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { computeTripPlan } from "@/lib/timeCalculation";
 import { getNextStop, markStopDeparted, markStopArrived, markPrepStarted } from "@/lib/tripProgress";
+import { selectActiveTrip } from "@/lib/activeTrip";
+import { computeHomeGreeting } from "@/lib/homeGreeting";
 import { buildLearningRecordsFromReview } from "@/lib/reviewToLearning";
 import { loadLearningRecords, saveLearningRecords } from "@/lib/storage";
-import { classifyDateGroup } from "@/lib/dateUtils";
 import { ReviewOutcome } from "@/types/learning";
 
 export default function HomePage() {
   const { trips, isLoading, updateTrip } = useTrips();
   const now = useNow();
 
-  const activeTrip = useMemo(() => {
-    const upcoming = trips
-      .filter((t) => !t.completed && t.stops.length > 0)
-      .filter((t) => classifyDateGroup(t.date, now) !== "past" || getNextStop(t))
-      .sort((a, b) => a.date.localeCompare(b.date));
-    return upcoming[0] ?? null;
-  }, [trips, now]);
-
+  const activeTrip = useMemo(() => selectActiveTrip(trips, now), [trips, now]);
   const needsReview = useMemo(() => trips.find((t) => t.completed && !t.reviewCompletedAt) ?? null, [trips]);
 
   if (isLoading) {
@@ -80,10 +74,14 @@ export default function HomePage() {
   const plan = computeTripPlan(activeTrip, now);
   const orderedStops = [...activeTrip.stops].sort((a, b) => a.order - b.order);
   const stopIndex = orderedStops.findIndex((s) => s.id === nextStop.id);
+  const stopPlan = plan.stopPlans[stopIndex];
+
+  // 根據行程日期（不是抵達時間）動態決定首頁標題，一律用本地日期字串比較
+  const { title: headerTitle, subtitle: headerSubtitle } = computeHomeGreeting(activeTrip, nextStop, stopPlan, now);
 
   return (
     <div>
-      <PageHeader title="今天有一趟行程" subtitle="下一個動作已經替你算好了。" compact />
+      <PageHeader title={headerTitle} subtitle={headerSubtitle} compact />
       <NextStopCard
         trip={activeTrip}
         stop={nextStop}
@@ -91,9 +89,9 @@ export default function HomePage() {
         totalStops={orderedStops.length}
         plan={plan}
         now={now}
-        onStartPrep={() => updateTrip(markPrepStarted(activeTrip))}
-        onDepart={() => updateTrip(markStopDeparted(activeTrip, nextStop.id))}
-        onArrive={() => updateTrip(markStopArrived(activeTrip, nextStop.id))}
+        onStartPrep={() => updateTrip(markPrepStarted(activeTrip, now))}
+        onDepart={() => updateTrip(markStopDeparted(activeTrip, nextStop.id, now))}
+        onArrive={() => updateTrip(markStopArrived(activeTrip, nextStop.id, now))}
       />
     </div>
   );

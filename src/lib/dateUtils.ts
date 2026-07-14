@@ -63,6 +63,48 @@ export function classifyDateGroup(dateStr: string, now: Date = new Date()): "tod
   return "later";
 }
 
+/**
+ * 安全的本地日期比較（section 一/三/四/五 共用）。
+ * 一律用 YYYY-MM-DD 字串比較，不使用 `new Date("YYYY-MM-DD")` 直接建立日期，
+ * 避免瀏覽器把純日期字串解析成 UTC 午夜，造成本地時區的日期偏移。
+ */
+export function isFutureDateKey(dateKey: string, now: Date = new Date()): boolean {
+  if (!dateKey) return false;
+  return dateKey > toDateKey(now);
+}
+
+export function isTodayDateKey(dateKey: string, now: Date = new Date()): boolean {
+  if (!dateKey) return false;
+  return dateKey === toDateKey(now);
+}
+
+export function isPastDateKey(dateKey: string, now: Date = new Date()): boolean {
+  if (!dateKey) return false;
+  return dateKey < toDateKey(now);
+}
+
+/** 格式化為「M 月 D 日」，用於未來行程標題 */
+export function formatMonthDay(dateStr: string): string {
+  if (!dateStr) return "";
+  const date = new Date(`${dateStr}T00:00:00`);
+  return `${date.getMonth() + 1} 月 ${date.getDate()} 日`;
+}
+
+/**
+ * 給距離現在超過一天的未來行程使用的天數／小時倒數，
+ * 不會顯示「還有 7145 分鐘」這種巨大分鐘數。
+ */
+export function describeDayCountdown(targetAt: Date, now: Date = new Date()): string {
+  const totalMinutes = diffMinutes(targetAt, now);
+  if (totalMinutes < 0) return "時間已過";
+  const days = Math.floor(totalMinutes / 1440);
+  const hours = Math.floor((totalMinutes % 1440) / 60);
+  if (days === 0) {
+    return hours > 0 ? `還有 ${hours} 小時` : "還有不到 1 小時";
+  }
+  return hours > 0 ? `還有 ${days} 天 ${hours} 小時` : `還有 ${days} 天`;
+}
+
 /** 相對時間描述，例如「還有 35 分鐘」「已經超過 8 分鐘」 */
 export function describeCountdown(targetAt: Date, now: Date = new Date()): string {
   const minutes = diffMinutes(targetAt, now);

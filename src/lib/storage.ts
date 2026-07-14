@@ -3,6 +3,7 @@ import { Trip } from "@/types/trip";
 import { AppSettings, createDefaultSettings } from "@/types/settings";
 import { StopLearningRecord } from "@/types/learning";
 import { createSampleTrip } from "@/lib/sampleData";
+import { isFutureDateKey } from "@/lib/dateUtils";
 
 /**
  * localStorage 存取層。
@@ -67,25 +68,59 @@ function safeWrite<T>(key: string, data: T): boolean {
 // ---- Trips ----
 
 /**
- * v0.1.1 migration：Trip 新增 `actualPrepStartTime` 欄位。
- * 舊資料（schemaVersion 1）沒有這個欄位，讀取時一律補上 null，
- * 確保舊行程也能安全在新版首頁顯示，不會因為欄位缺漏而出錯。
+ * v0.1.1 migration：Trip 新增 `actualPrepStartTime` 欄位，舊資料一律補上 null。
+ *
+ * v0.1.2 migration：測試期間發現未來行程可能被誤寫入即時進度資料
+ * （actualPrepStartTime / actualDepartureTime / actualArrivalTime / completed）。
+ * 只要行程日期仍在使用者本地「今天」之後，就清除這些進度欄位，
+ * 但完全不動行程內容、地點、時間或準備事項本身。
  */
-function normalizeTrip(trip: Trip): Trip {
-  return {
+export function normalizeTrip(trip: Trip, now: Date = new Date()): Trip {
+  const withDefaults: Trip = {
     ...trip,
     actualPrepStartTime: trip.actualPrepStartTime ?? null,
+  };
+
+  if (!isFutureDateKey(withDefaults.date, now)) {
+    return withDefaults;
+  }
+
+  const hasStrayProgress =
+    Boolean(withDefaults.actualPrepStartTime) ||
+    Boolean(withDefaults.reviewCompletedAt) ||
+    withDefaults.stops.some((s) => s.actualDepartureTime || s.actualArrivalTime) ||
+    withDefaults.completed;
+
+  if (!hasStrayProgress) {
+    return withDefaults;
+  }
+
+  return {
+    ...withDefaults,
+    actualPrepStartTime: null,
+    completed: false,
+    reviewCompletedAt: null,
+    stops: withDefaults.stops.map((s) => ({ ...s, actualDepartureTime: null, actualArrivalTime: null })),
   };
 }
 
 export function loadTrips(): Trip[] {
   const hasOnboarded = isBrowser() ? window.localStorage.getItem(KEYS.onboarded) : "1";
   const fallback = hasOnboarded ? [] : [createSampleTrip()];
-  const trips = safeRead<Trip[]>(KEYS.trips, fallback).map(normalizeTrip);
-  if (!hasOnboarded && isBrowser()) {
-    window.localStorage.setItem(KEYS.onboarded, "1");
-    safeWrite(KEYS.trips, trips);
+  const raw = safeRead<Trip[]>(KEYS.trips, fallback);
+  const trips = raw.map((t) => normalizeTrip(t));
+
+  if (isBrowser()) {
+    const changed = JSON.stringify(raw) !== JSON.stringify(trips);
+    if (!hasOnboarded) {
+      window.localStorage.setItem(KEYS.onboarded, "1");
+      safeWrite(KEYS.trips, trips);
+    } else if (changed) {
+      // 把清理過的未來行程進度寫回去，避免每次載入都重新清一次
+      safeWrite(KEYS.trips, trips);
+    }
   }
+
   return trips;
 }
 

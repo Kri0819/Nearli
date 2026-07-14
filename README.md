@@ -1,9 +1,11 @@
-# 未命名行程助手（v0.1.1）
+# 未命名行程助手（v0.1.2）
 
 > 這不是普通行事曆，也不是導航 App。
 > 告訴我幾點要真正抵達，我幫你倒推幾點該開始準備、幾點必須出門。
 
 程式正式名稱尚未決定，目前顯示名稱統一放在 `src/config/app.ts`，之後命名只需要改這一個檔案。
+
+**v0.1.2**：修正首頁把未來行程誤判為「今天」的問題，未來行程不再允許提前開始準備或出發；日期一律用本地 `YYYY-MM-DD` 字串比較，不使用 `new Date("YYYY-MM-DD")` 直接比較。新增自動化測試（`npm run test`）涵蓋這些情境。
 
 **v0.1.1**：首頁改為依行程階段（尚未準備／該準備／準備中／已出發）動態顯示最重要的時間與動作；BottomNav 改用 `lucide-react` 圖示；全站改為桌面置中、手機滿版的畫布結構。詳見本檔案最後的版本紀錄。
 
@@ -16,6 +18,7 @@ npm install
 npm run dev       # 本機開發，預設 http://localhost:3000
 npm run build     # 正式build
 npm start         # 啟動正式 build
+npm run test      # 執行自動化測試（vitest，涵蓋未來行程日期防呆）
 ```
 
 部署以 Vercel 為前提，直接匯入這個專案即可，不需要額外設定 Build Command / Output Directory（使用 Next.js 預設值）。

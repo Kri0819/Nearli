@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useTrips } from "@/hooks/useTrips";
 import { useNow } from "@/hooks/useNow";
 import { PageHeader } from "@/components/layout/PageHeader";
@@ -14,16 +14,18 @@ import { Button } from "@/components/common/Button";
 import { ShareStopModal } from "@/components/share/ShareStopModal";
 import { computeTripPlan } from "@/lib/timeCalculation";
 import { formatDateWithWeekday } from "@/lib/dateUtils";
+import { resetTripProgress } from "@/lib/tripProgress";
 import { createEmptyStop, Stop } from "@/types/stop";
 import { EmptyState } from "@/components/home/EmptyState";
 
 export default function TripDetailPage() {
   const params = useParams<{ id: string }>();
+  const searchParams = useSearchParams();
   const router = useRouter();
   const { getTrip, updateTrip, removeTrip, duplicateTrip, isLoading } = useTrips();
   const now = useNow();
 
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(searchParams.get("edit") === "1");
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
   const [isSharing, setIsSharing] = useState(false);
   const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
@@ -82,6 +84,20 @@ export default function TripDetailPage() {
               複製行程
             </Button>
           </div>
+          {(trip.actualPrepStartTime || trip.stops.some((s) => s.actualDepartureTime || s.actualArrivalTime)) && (
+            <Button
+              variant="ghost"
+              fullWidth
+              className="mt-2"
+              onClick={() => {
+                if (confirm("確定要重設這個行程的進度嗎？行程內容、地點與時間不會受影響。")) {
+                  updateTrip(resetTripProgress(trip));
+                }
+              }}
+            >
+              重設行程進度
+            </Button>
+          )}
           <Button
             variant="danger"
             fullWidth

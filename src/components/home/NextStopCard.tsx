@@ -4,13 +4,13 @@ import Link from "next/link";
 import { Trip } from "@/types/trip";
 import { Stop, TRANSPORT_MODE_LABELS } from "@/types/stop";
 import { TripPlan } from "@/types/timeline";
-import { formatTime, describeCountdown } from "@/lib/dateUtils";
+import { formatTime, describeCountdown, isFutureDateKey, formatMonthDay, describeDayCountdown } from "@/lib/dateUtils";
 import { buildNavigationUrl } from "@/lib/mapsAdapter";
 import { predictArrivalIfDepartingNow, describeDepartedStatus } from "@/lib/liveStatus";
 import { Button } from "@/components/common/Button";
 import { StatusBadge } from "@/components/trip/StatusBadge";
 
-type Stage = "before_prep" | "ready_to_prep" | "awaiting_departure" | "departed";
+type Stage = "future" | "before_prep" | "ready_to_prep" | "awaiting_departure" | "departed";
 
 export function NextStopCard({
   trip,
@@ -35,12 +35,17 @@ export function NextStopCard({
 }) {
   const stopPlan = plan.stopPlans[stopIndex];
   const isFirstStop = stopIndex === 0;
+  const isFuture = isFutureDateKey(trip.date, now);
   const hasDeparted = Boolean(stop.actualDepartureTime);
   const hasPrepStarted = Boolean(trip.actualPrepStartTime);
   const isPrepTime = isFirstStop && plan.prepStartAt ? now >= plan.prepStartAt : false;
 
+  // 未來行程一律優先判定為 future，不可能同時處於準備／出發狀態
+  // （tripProgress.ts 的 markPrepStarted / markStopDeparted / markStopArrived 本身也會擋下寫入）
   let stage: Stage = "awaiting_departure";
-  if (hasDeparted) {
+  if (isFuture) {
+    stage = "future";
+  } else if (hasDeparted) {
     stage = "departed";
   } else if (isFirstStop && !hasPrepStarted) {
     stage = isPrepTime ? "ready_to_prep" : "before_prep";
@@ -58,13 +63,43 @@ export function NextStopCard({
           <p className="truncate text-sm font-medium text-ink-600">{trip.title || "未命名行程"}</p>
           <p className="text-xs text-ink-400">
             第 {stopIndex + 1}／{totalStops} 站
+            {!isFuture && ` · ${formatMonthDay(trip.date)}`}
           </p>
         </div>
-        <StatusBadge status={stopPlan.riskStatus} />
+        {!isFuture && <StatusBadge status={stopPlan.riskStatus} />}
       </div>
 
       {/* 2 + 3. 主要行動時間與倒數資訊 */}
       <div className="mt-4">
+        {stage === "future" && (
+          <>
+            <p className="text-2xl font-semibold tabular-nums leading-tight text-ink-800">
+              {formatMonthDay(trip.date)}
+            </p>
+            {plan.prepStartAt && (
+              <span className="mt-2 inline-block rounded-full bg-aqua-50 px-3 py-1 text-xs font-medium text-aqua-700">
+                {describeDayCountdown(plan.prepStartAt, now)}
+              </span>
+            )}
+            <dl className="mt-4 space-y-2 text-sm">
+              {plan.prepStartAt && (
+                <div className="flex items-baseline gap-2">
+                  <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(plan.prepStartAt)}</dt>
+                  <dd className="text-ink-500">開始準備</dd>
+                </div>
+              )}
+              <div className="flex items-baseline gap-2">
+                <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(stopPlan.mustLeaveAt)}</dt>
+                <dd className="text-ink-500">前必須離開</dd>
+              </div>
+              <div className="flex items-baseline gap-2">
+                <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(stopPlan.targetArrivalAt)}</dt>
+                <dd className="text-ink-500">抵達{stop.name || "未命名地點"}</dd>
+              </div>
+            </dl>
+          </>
+        )}
+
         {stage === "before_prep" && (
           <>
             <p className="text-xs font-medium text-aqua-600">下一個動作</p>
@@ -125,8 +160,8 @@ export function NextStopCard({
         )}
       </div>
 
-      {/* 4. 下一站摘要（已出發時main figure 已經說明去向，這裡不重複顯示） */}
-      {stage !== "departed" && (
+      {/* 4. 下一站摘要（已出發時 main figure 已經說明去向，future 已經在上方列出，這裡不重複顯示） */}
+      {stage !== "departed" && stage !== "future" && (
         <div className="mt-4 rounded-xl2 bg-cream-100 p-3">
           <p className="truncate text-sm font-medium text-ink-700">{stop.name || "未命名地點"}</p>
           <p className="mt-0.5 text-xs text-ink-400">{formatTime(stopPlan.targetArrivalAt)} 抵達</p>
@@ -138,12 +173,37 @@ export function NextStopCard({
         </div>
       )}
 
-      {stopPlan.riskStatus !== "comfortable" && (
+      {stage === "future" && (
+        <div className="mt-4 rounded-xl2 bg-cream-100 p-3">
+          <p className="text-xs text-ink-500">
+            {TRANSPORT_MODE_LABELS[stop.transportMode]} {stopPlan.effectiveTravelMinutes} 分鐘
+            {stop.parking.mode !== "none" && `・停車 ${stop.parkingMinutes} 分鐘`}
+            {stop.walkFromParkingMinutes > 0 && `・步行 ${stop.walkFromParkingMinutes} 分鐘`}
+          </p>
+        </div>
+      )}
+
+      {stage !== "future" && stopPlan.riskStatus !== "comfortable" && (
         <p className="mt-3 text-xs text-ink-500">{stopPlan.statusMessage}</p>
       )}
 
-      {/* 5. 主要操作：每個階段只突出一個主要動作 */}
+      {/* 5. 主要操作：未來行程只能查看／編輯，不能操作即時進度 */}
       <div className="mt-4 space-y-2">
+        {stage === "future" && (
+          <div className="grid grid-cols-2 gap-2">
+            <Link href={`/trips/${trip.id}?edit=1`}>
+              <Button variant="secondary" fullWidth size="md">
+                編輯行程
+              </Button>
+            </Link>
+            <Link href={`/trips/${trip.id}`}>
+              <Button variant="ghost" fullWidth size="md">
+                查看完整行程
+              </Button>
+            </Link>
+          </div>
+        )}
+
         {(stage === "before_prep" || stage === "ready_to_prep") && (
           <Button fullWidth onClick={onStartPrep}>
             開始準備
@@ -166,11 +226,13 @@ export function NextStopCard({
             </Button>
           </div>
         )}
-        <Link href={`/trips/${trip.id}`}>
-          <Button variant="ghost" fullWidth size="md">
-            查看完整行程
-          </Button>
-        </Link>
+        {stage !== "future" && (
+          <Link href={`/trips/${trip.id}`}>
+            <Button variant="ghost" fullWidth size="md">
+              查看完整行程
+            </Button>
+          </Link>
+        )}
       </div>
     </div>
   );
