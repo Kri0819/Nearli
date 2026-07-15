@@ -1,13 +1,15 @@
-# 未命名行程助手（v0.1.2）
+# Nearli（v0.1.3）
 
-> 這不是普通行事曆，也不是導航 App。
-> 告訴我幾點要真正抵達，我幫你倒推幾點該開始準備、幾點必須出門。
+> Nearli 不是一般行事曆，也不只是告訴你幾點出門。
+> 把出門前需要估算、安排與判斷的事情外部化，到了正確時間，直接告訴你現在該做什麼。
 
-程式正式名稱尚未決定，目前顯示名稱統一放在 `src/config/app.ts`，之後命名只需要改這一個檔案。
+品牌名稱：**Nearli**（中文概念：快到了）。顯示名稱與文案統一放在 `src/config/app.ts`，各頁面一律從這裡引用，不會寫死文字。
 
-**v0.1.2**：修正首頁把未來行程誤判為「今天」的問題，未來行程不再允許提前開始準備或出發；日期一律用本地 `YYYY-MM-DD` 字串比較，不使用 `new Date("YYYY-MM-DD")` 直接比較。新增自動化測試（`npm run test`）涵蓋這些情境。
+**v0.1.3**：正式命名為 Nearli；「開始準備」升級為逐步準備流程——每個準備事項有自己的預定開始/完成時間，可以個別開始、完成或跳過，延誤會自動重新排程後續事項（不會刪除或縮短使用者的設定）。新增 [`docs/PROJECT_MAP.md`](./docs/PROJECT_MAP.md) 專案地圖，之後每次改動都會同步更新。
 
-**v0.1.1**：首頁改為依行程階段（尚未準備／該準備／準備中／已出發）動態顯示最重要的時間與動作；BottomNav 改用 `lucide-react` 圖示；全站改為桌面置中、手機滿版的畫布結構。詳見本檔案最後的版本紀錄。
+**v0.1.2**：修正首頁把未來行程誤判為「今天」的問題，未來行程不再允許提前開始準備或出發；日期一律用本地 `YYYY-MM-DD` 字串比較。
+
+**v0.1.1**：首頁改為依行程階段動態顯示最重要的時間與動作；BottomNav 改用 `lucide-react` 圖示；全站改為桌面置中、手機滿版的畫布結構。
 
 ## 安裝與啟動
 
@@ -50,7 +52,10 @@ cp .env.example .env.local
 - **分享功能**：只能分享單一停靠點的會合資訊（地點、時間、地圖連結），絕不包含出發地、準備事項或私人備註；使用 URL 編碼建立唯讀分享頁（`/share/[id]`），沒有共同編輯。
 - **通知**：Notification API 權限流程、App 開啟期間的提醒、PWA service worker 基礎架構、未來推播服務的 adapter 介面（`src/lib/pushAdapter.ts`）。
 - **本機儲存**：`src/lib/storage.ts`，localStorage 版本化 + 錯誤處理，資料格式異常時會安全回退，不會讓 App 崩潰。
+- **逐步準備流程（v0.1.3）**：`src/lib/preparationTimeline.ts`，每個準備事項有自己的預定開始／完成時間，可個別開始、完成、跳過；延誤會自動把後續事項往後順延（不刪除、不縮短使用者設定），並提供「目前仍有足夠時間／時間開始偏緊／可能晚到」的重算建議。
+- **未來行程日期防呆（v0.1.2）**：所有日期比較一律用本地 `YYYY-MM-DD` 字串比較；未來行程無法提前寫入任何即時進度（`src/lib/tripProgress.ts` 內建防呆，不只靠 UI 隱藏按鈕）。
 - **示範資料**：第一次開啟會自動加入一筆可刪除的示範行程「週六約會」，示範完整倒推流程。
+- **自動化測試**：`npm run test`（vitest），涵蓋未來行程防呆與逐步準備流程的排程/延誤重算/資料 migration。
 
 ## 目前使用 mock 的功能
 
@@ -84,6 +89,9 @@ itinerary-app/
 ├── postcss.config.js
 ├── tailwind.config.ts
 ├── tsconfig.json
+├── vitest.config.ts
+├── docs/
+│   └── PROJECT_MAP.md
 ├── public/
 │   ├── manifest.json
 │   ├── sw.js
@@ -103,14 +111,21 @@ itinerary-app/
     │   ├── timeline.ts
     │   └── trip.ts
     ├── lib/
+    │   ├── __tests__/
+    │   │   ├── futureTripGuards.test.ts
+    │   │   └── preparationFlow.test.ts
+    │   ├── activeTrip.ts
     │   ├── aiParser.ts
     │   ├── aiToTrip.ts
     │   ├── dateUtils.ts
+    │   ├── homeGreeting.ts
     │   ├── id.ts
     │   ├── learningEngine.ts
     │   ├── liveStatus.ts
     │   ├── mapsAdapter.ts
     │   ├── parkingEstimator.ts
+    │   ├── prepSuggestions.ts
+    │   ├── preparationTimeline.ts
     │   ├── pushAdapter.ts
     │   ├── reviewToLearning.ts
     │   ├── sampleData.ts

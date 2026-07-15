@@ -8,12 +8,13 @@ import { EmptyState } from "@/components/home/EmptyState";
 import { TripReview } from "@/components/trip/TripReview";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { computeTripPlan } from "@/lib/timeCalculation";
-import { getNextStop, markStopDeparted, markStopArrived, markPrepStarted } from "@/lib/tripProgress";
+import { getNextStop, markStopDeparted, markStopArrived, startPreparationTask, completePreparationTask, skipPreparationTask } from "@/lib/tripProgress";
 import { selectActiveTrip } from "@/lib/activeTrip";
 import { computeHomeGreeting } from "@/lib/homeGreeting";
 import { buildLearningRecordsFromReview } from "@/lib/reviewToLearning";
 import { loadLearningRecords, saveLearningRecords } from "@/lib/storage";
 import { ReviewOutcome } from "@/types/learning";
+import { APP_CONFIG } from "@/config/app";
 
 export default function HomePage() {
   const { trips, isLoading, updateTrip } = useTrips();
@@ -25,7 +26,7 @@ export default function HomePage() {
   if (isLoading) {
     return (
       <div>
-        <PageHeader title="今天要去哪裡？" subtitle="我幫你算好何時該動身。" />
+        <PageHeader title="今天要去哪裡？" subtitle={APP_CONFIG.shortTagline} />
         <p className="text-sm text-ink-400">載入中…</p>
       </div>
     );
@@ -49,10 +50,10 @@ export default function HomePage() {
   if (!activeTrip) {
     return (
       <div>
-        <PageHeader title="今天要去哪裡？" subtitle="我幫你算好何時該動身。" />
+        <PageHeader title="今天要去哪裡？" subtitle={APP_CONFIG.shortTagline} />
         <EmptyState
           title="今天還沒有行程"
-          subtitle={"告訴我幾點要到，\n我幫你把準備、路程和停車時間一起算好。"}
+          subtitle="告訴 Nearli 幾點要到，我會替你安排準備、出發和真正抵達的時間。"
           actionLabel="建立第一個行程"
           actionHref="/new"
         />
@@ -89,7 +90,9 @@ export default function HomePage() {
         totalStops={orderedStops.length}
         plan={plan}
         now={now}
-        onStartPrep={() => updateTrip(markPrepStarted(activeTrip, now))}
+        onStartTask={(taskId) => updateTrip(startPreparationTask(activeTrip, taskId, now))}
+        onCompleteTask={(taskId) => updateTrip(completePreparationTask(activeTrip, taskId, now))}
+        onSkipTask={(taskId) => updateTrip(skipPreparationTask(activeTrip, taskId, now))}
         onDepart={() => updateTrip(markStopDeparted(activeTrip, nextStop.id, now))}
         onArrive={() => updateTrip(markStopArrived(activeTrip, nextStop.id, now))}
       />

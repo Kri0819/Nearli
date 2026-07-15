@@ -74,11 +74,20 @@ function safeWrite<T>(key: string, data: T): boolean {
  * （actualPrepStartTime / actualDepartureTime / actualArrivalTime / completed）。
  * 只要行程日期仍在使用者本地「今天」之後，就清除這些進度欄位，
  * 但完全不動行程內容、地點、時間或準備事項本身。
+ *
+ * v0.1.3 migration：PreparationTask 新增 `actualStartedAt` / `actualCompletedAt` 欄位，
+ * 舊資料（沒有這兩個欄位）一律補上 null，不會造成 App 崩潰；
+ * 同樣的欄位也納入「未來行程不可有進度資料」的清理範圍。
  */
 export function normalizeTrip(trip: Trip, now: Date = new Date()): Trip {
   const withDefaults: Trip = {
     ...trip,
     actualPrepStartTime: trip.actualPrepStartTime ?? null,
+    preparationTasks: trip.preparationTasks.map((t) => ({
+      ...t,
+      actualStartedAt: t.actualStartedAt ?? null,
+      actualCompletedAt: t.actualCompletedAt ?? null,
+    })),
   };
 
   if (!isFutureDateKey(withDefaults.date, now)) {
@@ -89,6 +98,7 @@ export function normalizeTrip(trip: Trip, now: Date = new Date()): Trip {
     Boolean(withDefaults.actualPrepStartTime) ||
     Boolean(withDefaults.reviewCompletedAt) ||
     withDefaults.stops.some((s) => s.actualDepartureTime || s.actualArrivalTime) ||
+    withDefaults.preparationTasks.some((t) => t.actualStartedAt || t.actualCompletedAt) ||
     withDefaults.completed;
 
   if (!hasStrayProgress) {
@@ -101,6 +111,11 @@ export function normalizeTrip(trip: Trip, now: Date = new Date()): Trip {
     completed: false,
     reviewCompletedAt: null,
     stops: withDefaults.stops.map((s) => ({ ...s, actualDepartureTime: null, actualArrivalTime: null })),
+    preparationTasks: withDefaults.preparationTasks.map((t) => ({
+      ...t,
+      actualStartedAt: null,
+      actualCompletedAt: null,
+    })),
   };
 }
 

@@ -15,6 +15,7 @@ import { ShareStopModal } from "@/components/share/ShareStopModal";
 import { computeTripPlan } from "@/lib/timeCalculation";
 import { formatDateWithWeekday } from "@/lib/dateUtils";
 import { resetTripProgress } from "@/lib/tripProgress";
+import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
 import { createEmptyStop, Stop } from "@/types/stop";
 import { EmptyState } from "@/components/home/EmptyState";
 
@@ -22,7 +23,7 @@ export default function TripDetailPage() {
   const params = useParams<{ id: string }>();
   const searchParams = useSearchParams();
   const router = useRouter();
-  const { getTrip, updateTrip, removeTrip, duplicateTrip, isLoading } = useTrips();
+  const { trips, getTrip, updateTrip, removeTrip, duplicateTrip, isLoading } = useTrips();
   const now = useNow();
 
   const [isEditing, setIsEditing] = useState(searchParams.get("edit") === "1");
@@ -73,7 +74,7 @@ export default function TripDetailPage() {
           {orderedStops.length === 0 ? (
             <EmptyState title="這個行程還沒有停靠點" subtitle="編輯行程以新增停靠點。" />
           ) : (
-            <StopTimeline trip={trip} plan={plan} />
+            <StopTimeline trip={trip} plan={plan} now={now} />
           )}
 
           <div className="mt-4 flex gap-2">
@@ -159,6 +160,7 @@ export default function TripDetailPage() {
             <PreparationTaskManager
               tasks={trip.preparationTasks}
               onChange={(tasks) => updateTrip({ ...trip, preparationTasks: tasks })}
+              suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
             />
           </div>
 

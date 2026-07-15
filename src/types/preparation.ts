@@ -9,7 +9,28 @@ export interface PreparationTask {
   enabled: boolean;
   /** 排序順序，數字越小越前面 */
   order: number;
+
+  /** 使用者實際開始這個事項的時間，尚未開始則為 null（v0.1.3 新增） */
+  actualStartedAt: string | null;
+  /** 使用者實際完成（或跳過）這個事項的時間，尚未完成則為 null（v0.1.3 新增） */
+  actualCompletedAt: string | null;
 }
+
+/** 已知準備事項名稱的預設分鐘數，新增同名事項時直接帶入，不需要每次重填 */
+export const DEFAULT_PREPARATION_MINUTES: Record<string, number> = {
+  洗澡: 20,
+  挑衣服: 15,
+  換衣服: 15,
+  化妝: 20,
+  上廁所: 5,
+  收拾包包: 10,
+  整理包包: 10,
+  吃東西: 15,
+  吃早餐: 15,
+  整理儀容: 10,
+  吹頭髮: 10,
+  其他: 10,
+};
 
 /** 建立預設準備事項清單（可由使用者新增、刪除、修改、拖曳排序） */
 export function createDefaultPreparationTasks(): PreparationTask[] {
@@ -29,5 +50,7 @@ export function createDefaultPreparationTasks(): PreparationTask[] {
     estimatedMinutes,
     enabled: false,
     order: index,
+    actualStartedAt: null,
+    actualCompletedAt: null,
   }));
 }

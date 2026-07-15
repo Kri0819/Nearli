@@ -1,22 +1,30 @@
 /**
  * 全域 App 設定。
  *
- * 目前程式名稱尚未決定，暫時顯示名稱統一在這裡管理，
- * 之後正式命名時只需要修改這個檔案，不需要逐頁修改。
+ * 正式品牌名稱為 Nearli，統一在這裡管理，
+ * 頁面與元件一律從這裡引用，不會寫死文字。
  */
 export const APP_CONFIG = {
-  /** 暫時顯示名稱，尚未正式命名 */
-  displayName: "未命名行程助手",
-  /** 精簡版名稱，用於底部導覽、通知標題等空間有限的地方 */
-  shortName: "行程助手",
+  displayName: "Nearli",
+  shortName: "Nearli",
   /** 版本號 */
-  version: "0.1.2",
+  version: "0.1.3",
   /** 版本代稱 */
-  versionCodename: "未來行程與首頁日期狀態修正",
-  /** localStorage 資料結構版本，用於未來遷移。v0.1.2：清除未來行程被誤寫入的即時進度資料 */
-  storageSchemaVersion: 3,
+  versionCodename: "Nearli 品牌與逐步準備流程",
+  /**
+   * localStorage 資料結構版本，用於未來遷移。
+   * v0.1.1：Trip 新增 actualPrepStartTime 欄位
+   * v0.1.2：清除未來行程被誤寫入的即時進度資料
+   * v0.1.3：PreparationTask 新增 actualStartedAt / actualCompletedAt 欄位，
+   *         並將這兩個欄位一併納入「未來行程不可有進度資料」的清理範圍
+   */
+  storageSchemaVersion: 4,
   /** 預設語言 */
   locale: "zh-Hant-TW",
+  /** 完整版產品描述 */
+  tagline: "告訴 Nearli 幾點要到，它會按照你的實際習慣，安排現在該做什麼。",
+  /** 精簡版產品描述，空間有限的地方使用 */
+  shortTagline: "從準備到抵達，一步一步帶你準時出門。",
 } as const;
 
 export type AppConfig = typeof APP_CONFIG;

@@ -21,10 +21,10 @@ export function createSampleTrip(): Trip {
   const now = new Date().toISOString();
 
   const preparationTasks: PreparationTask[] = [
-    { id: "prep-sample-1", name: "洗澡", estimatedMinutes: 20, enabled: true, order: 0 },
-    { id: "prep-sample-2", name: "挑衣服", estimatedMinutes: 15, enabled: true, order: 1 },
-    { id: "prep-sample-3", name: "化妝", estimatedMinutes: 30, enabled: true, order: 2 },
-    { id: "prep-sample-4", name: "收拾包包", estimatedMinutes: 10, enabled: true, order: 3 },
+    { id: "prep-sample-1", name: "洗澡", estimatedMinutes: 20, enabled: true, order: 0, actualStartedAt: null, actualCompletedAt: null },
+    { id: "prep-sample-2", name: "挑衣服", estimatedMinutes: 15, enabled: true, order: 1, actualStartedAt: null, actualCompletedAt: null },
+    { id: "prep-sample-3", name: "化妝", estimatedMinutes: 30, enabled: true, order: 2, actualStartedAt: null, actualCompletedAt: null },
+    { id: "prep-sample-4", name: "收拾包包", estimatedMinutes: 10, enabled: true, order: 3, actualStartedAt: null, actualCompletedAt: null },
   ];
 
   const stops: Stop[] = [

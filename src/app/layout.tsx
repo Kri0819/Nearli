@@ -6,7 +6,7 @@ import "./globals.css";
 
 export const metadata: Metadata = {
   title: APP_CONFIG.displayName,
-  description: "告訴我幾點要抵達，我幫你倒推幾點該出門。",
+  description: APP_CONFIG.tagline,
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,

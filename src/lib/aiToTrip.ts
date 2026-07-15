@@ -1,7 +1,6 @@
 import { ParsedItinerary } from "@/types/ai";
 import { createEmptyTrip } from "@/types/trip";
 import { createEmptyStop } from "@/types/stop";
-import { PreparationTask } from "@/types/preparation";
 import { Trip } from "@/types/trip";
 import { generateId } from "@/lib/id";
 import { combineDateAndTime } from "@/lib/dateUtils";
@@ -24,7 +23,9 @@ export function buildTripDraftFromParsedItinerary(parsed: ParsedItinerary, fallb
     estimatedMinutes: task.estimatedMinutes,
     enabled: true,
     order: index,
-  })) as PreparationTask[];
+    actualStartedAt: null,
+    actualCompletedAt: null,
+  }));
 
   trip.stops = parsed.stops.map((parsedStop, index) => {
     const stop = createEmptyStop(index);

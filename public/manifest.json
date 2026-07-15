@@ -1,7 +1,7 @@
 {
-  "name": "未命名行程助手",
-  "short_name": "行程助手",
-  "description": "告訴我幾點要抵達，我幫你倒推幾點該出門。",
+  "name": "Nearli",
+  "short_name": "Nearli",
+  "description": "告訴 Nearli 幾點要到，它會替你安排準備、出發與真正抵達的時間。",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#faf7f2",

@@ -11,6 +11,8 @@ import { StopForm } from "@/components/forms/StopForm";
 import { Modal } from "@/components/common/Modal";
 import { Button } from "@/components/common/Button";
 import { toDateKey } from "@/lib/dateUtils";
+import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
+import { useTrips } from "@/hooks/useTrips";
 
 export function ConfirmItinerary({
   parsed,
@@ -21,6 +23,7 @@ export function ConfirmItinerary({
   onConfirm: (trip: Trip) => void;
   onDiscard: () => void;
 }) {
+  const { trips } = useTrips();
   const [trip, setTrip] = useState<Trip>(() => buildTripDraftFromParsedItinerary(parsed, toDateKey(new Date())));
   const [editingStop, setEditingStop] = useState<Stop | null>(null);
 
@@ -90,6 +93,7 @@ export function ConfirmItinerary({
         <PreparationTaskManager
           tasks={trip.preparationTasks}
           onChange={(tasks) => setTrip((t) => ({ ...t, preparationTasks: tasks }))}
+          suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
         />
       </div>
 

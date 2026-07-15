@@ -16,13 +16,14 @@ import { createEmptyStop, Stop } from "@/types/stop";
 import { createDefaultPreparationTasks } from "@/types/preparation";
 import { ParsedItinerary } from "@/types/ai";
 import { toDateKey } from "@/lib/dateUtils";
+import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
 
 type Tab = "ai" | "manual";
 
 export default function NewTripPage() {
   const [tab, setTab] = useState<Tab>("ai");
   const [parsed, setParsed] = useState<ParsedItinerary | null>(null);
-  const { addTrip } = useTrips();
+  const { trips, addTrip } = useTrips();
   const router = useRouter();
 
   const [draft, setDraft] = useState(() => {
@@ -117,6 +118,7 @@ export default function NewTripPage() {
             <PreparationTaskManager
               tasks={draft.preparationTasks}
               onChange={(tasks) => setDraft((d) => ({ ...d, preparationTasks: tasks }))}
+              suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
             />
           </div>
 

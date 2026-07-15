@@ -4,6 +4,7 @@ import { Trip } from "@/types/trip";
 import { TripPlan } from "@/types/timeline";
 import { TRANSPORT_MODE_LABELS } from "@/types/stop";
 import { formatTime } from "@/lib/dateUtils";
+import { computePreparationPlan, PreparationTaskStatus } from "@/lib/preparationTimeline";
 import { StatusBadge } from "@/components/trip/StatusBadge";
 
 function TimelineRow({
@@ -38,28 +39,33 @@ function TimelineRow({
   );
 }
 
-export function StopTimeline({ trip, plan }: { trip: Trip; plan: TripPlan }) {
+const PREP_STATUS_LABEL: Record<PreparationTaskStatus, string> = {
+  completed: "已完成",
+  current: "進行中",
+  overdue: "尚未開始",
+  upcoming: "尚未開始",
+};
+
+export function StopTimeline({ trip, plan, now }: { trip: Trip; plan: TripPlan; now: Date }) {
   const orderedStops = [...trip.stops].sort((a, b) => a.order - b.order);
-  const enabledTasks = [...trip.preparationTasks].filter((t) => t.enabled).sort((a, b) => a.order - b.order);
+  const firstStopPlan = plan.stopPlans[0];
+  const prepPlans = firstStopPlan ? computePreparationPlan(trip.preparationTasks, firstStopPlan.mustLeaveAt, now) : [];
 
   return (
     <div>
-      {plan.prepStartAt && (
-        <TimelineRow time={formatTime(plan.prepStartAt)} title="開始準備" emphasis />
+      {prepPlans.length > 0 && (
+        <>
+          {prepPlans.map((task) => (
+            <TimelineRow
+              key={task.taskId}
+              time={`${formatTime(task.plannedStartAt)}–${formatTime(task.plannedEndAt)}`}
+              title={task.name}
+              subtitle={PREP_STATUS_LABEL[task.status]}
+              emphasis={task.status === "current"}
+            />
+          ))}
+        </>
       )}
-
-      {plan.preparationSchedule.map((schedule) => {
-        const task = enabledTasks.find((t) => t.id === schedule.taskId);
-        if (!task) return null;
-        return (
-          <TimelineRow
-            key={schedule.taskId}
-            time={formatTime(schedule.startAt)}
-            title={task.name}
-            subtitle={`預估 ${task.estimatedMinutes} 分鐘`}
-          />
-        );
-      })}
 
       {orderedStops.map((stop, index) => {
         const stopPlan = plan.stopPlans[index];

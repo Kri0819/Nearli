@@ -55,7 +55,7 @@ self.addEventListener("fetch", (event) => {
  */
 self.addEventListener("push", (event) => {
   if (!event.data) return;
-  let payload = { title: "行程助手", body: "" };
+  let payload = { title: "Nearli", body: "" };
   try {
     payload = event.data.json();
   } catch {
