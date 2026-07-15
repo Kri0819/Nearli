@@ -29,7 +29,7 @@ export function EmptyState({
   actionHref?: string;
 }) {
   return (
-    <div className="mt-10 flex flex-col items-center rounded-xl2 bg-white p-8 text-center shadow-soft">
+    <div className="mt-10 flex flex-col items-center rounded-xl2 border border-ink-100 bg-white p-8 text-center shadow-soft">
       <RouteDecoration />
       <p className="text-base font-medium text-ink-700">{title}</p>
       <p className="mt-1 whitespace-pre-line text-sm leading-relaxed text-ink-400">{subtitle}</p>

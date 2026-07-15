@@ -77,7 +77,7 @@ export function NextStopCard({
   const nextTask = activeTask ? getNextUpcomingTask(prepPlans, activeTask.taskId) : null;
 
   return (
-    <div className="fade-in rounded-xl2 bg-white p-5 shadow-soft">
+    <div className="fade-in rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
       {/* 1. 卡片頂部 */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -124,7 +124,7 @@ export function NextStopCard({
         {stage === "before_prep" && activeTask && (
           <>
             <p className="text-xs font-medium text-aqua-600">下一個動作</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight text-ink-800">
+            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
               {formatTime(activeTask.plannedStartAt)}
             </p>
             <p className="text-sm text-ink-500">開始{activeTask.name}</p>
@@ -138,7 +138,7 @@ export function NextStopCard({
         {stage === "ready_to_prep" && activeTask && (
           <>
             <p className="text-xs font-medium text-aqua-600">現在開始</p>
-            <p className="mt-1 text-3xl font-semibold leading-tight text-ink-800">{activeTask.name}</p>
+            <p className="mt-1 text-3xl font-semibold leading-tight tracking-tight text-ink-800">{activeTask.name}</p>
             <p className="text-sm text-ink-500">{formatTime(activeTask.plannedEndAt)} 前完成</p>
           </>
         )}
@@ -146,7 +146,7 @@ export function NextStopCard({
         {stage === "preparing" && activeTask && (
           <>
             <p className="text-xs font-medium text-aqua-600">現在去{activeTask.name}</p>
-            <p className="mt-1 text-3xl font-semibold leading-tight text-ink-800">
+            <p className="mt-1 text-3xl font-semibold leading-tight tracking-tight text-ink-800">
               已進行 {Math.max(0, diffMinutes(now, activeTask.actualStartedAt ?? now))} 分鐘
             </p>
             <p className="text-sm text-ink-500">{formatTime(activeTask.plannedEndAt)} 前完成</p>
@@ -168,7 +168,7 @@ export function NextStopCard({
         {stage === "awaiting_departure" && (
           <>
             <p className="text-xs font-medium text-aqua-600">{isFirstStop ? "準備完成" : "必須離開"}</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight text-ink-800">
+            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
               {formatTime(stopPlan.mustLeaveAt)}
             </p>
             <p className="text-sm text-ink-500">前必須離開</p>
@@ -181,7 +181,7 @@ export function NextStopCard({
         {stage === "departed" && prediction && (
           <>
             <p className="text-xs font-medium text-aqua-600">正在前往{stop.name || "下一站"}</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight text-ink-800">
+            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
               {formatTime(prediction.predictedArrivalAt)}
             </p>
             <p className="text-sm text-ink-500">預計抵達</p>

@@ -1,5 +1,6 @@
 "use client";
 
+import { GripVertical, Copy, X } from "lucide-react";
 import { Stop, TIME_CONSTRAINT_LABELS, TRANSPORT_MODE_LABELS } from "@/types/stop";
 import { formatTime } from "@/lib/dateUtils";
 
@@ -30,11 +31,11 @@ export function StopCard({
       onDragStart={onDragStart}
       onDragOver={onDragOver}
       onDrop={onDrop}
-      className="flex items-center gap-3 rounded-xl2 border border-ink-100 bg-white p-3"
+      className="flex items-center gap-3 rounded-xl2 border border-ink-100 bg-white p-3 shadow-soft"
     >
       {draggable && (
         <span className="cursor-grab select-none text-ink-300" aria-hidden>
-          ⠿
+          <GripVertical size={16} />
         </span>
       )}
       <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-aqua-50 text-xs font-medium text-aqua-700">
@@ -52,17 +53,17 @@ export function StopCard({
           type="button"
           onClick={onDuplicate}
           aria-label="複製這一站"
-          className="rounded-full p-1.5 text-ink-400 hover:bg-ink-100/60"
+          className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-ink-100 hover:text-ink-600"
         >
-          ⧉
+          <Copy size={16} />
         </button>
         <button
           type="button"
           onClick={onDelete}
           aria-label="刪除這一站"
-          className="rounded-full p-1.5 text-ink-400 hover:bg-risk-50 hover:text-risk-500"
+          className="rounded-full p-1.5 text-ink-400 transition-colors hover:bg-risk-50 hover:text-risk-500"
         >
-          ✕
+          <X size={16} />
         </button>
       </div>
     </div>

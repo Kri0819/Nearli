@@ -3,7 +3,7 @@
 這份文件是專案的地圖，因為 Next.js App Router 的功能會分散在多個檔案裡。
 **每次版本更新都必須同步更新這份文件**，尤其是新增檔案、搬動邏輯，或新增/移除頁面時。
 
-目前版本：v0.1.3
+目前版本：v0.1.4
 
 ---
 
@@ -163,3 +163,4 @@ AI 解析相關：`src/lib/aiParser.ts`（本地 mock parser + 呼叫 API 的 cl
 - **v0.1.1**：首頁改為依階段動態顯示，BottomNav 改用 `lucide-react`，全站畫布結構調整。
 - **v0.1.2**：修正未來行程被誤判為今天、首頁行程選取邏輯、localStorage migration 清除未來行程的錯誤進度。
 - **v0.1.3**：正式命名為 Nearli；準備事項升級為逐步流程（`preparationTimeline.ts`、`tripProgress.ts` 新增每個事項的開始/完成/跳過）；新增 `docs/PROJECT_MAP.md`（本檔案）。
+- **v0.1.4**：純視覺與觸感更新，資料結構與時間計算沒有變動。補齊 `tailwind.config.ts` 缺少的 `ink-50/100/200/300` 色階（修正大量 `border-ink-100` 等類別實際上沒有作用的問題）；全面改用 `lucide-react` 取代殘留文字符號圖示；卡片改為雙層陰影＋細邊框；`Modal` 改為原生 bottom sheet 手感；讀取狀態改用骨架屏（`src/components/common/Skeleton.tsx`）。

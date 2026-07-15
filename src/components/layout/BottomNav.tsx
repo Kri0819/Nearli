@@ -16,7 +16,7 @@ export function BottomNav() {
 
   return (
     <nav
-      className="sticky bottom-0 z-40 border-t border-ink-100/60 bg-white/95 backdrop-blur"
+      className="sticky bottom-0 z-40 border-t border-ink-100 bg-white/95 shadow-nav-lift backdrop-blur"
       style={{ paddingBottom: "env(safe-area-inset-bottom)" }}
     >
       <div className="flex items-center justify-around px-2 py-1">
@@ -28,7 +28,7 @@ export function BottomNav() {
             <Link
               key={href}
               href={href}
-              className="flex min-h-[48px] min-w-[64px] flex-col items-center justify-center gap-0.5 rounded-xl2 px-3 py-1.5 text-xs transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500"
+              className="flex min-h-[48px] min-w-[64px] flex-col items-center justify-center gap-0.5 rounded-xl2 px-3 py-1.5 text-xs transition-transform active:scale-95 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500"
             >
               <span
                 className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${

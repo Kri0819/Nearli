@@ -1,6 +1,7 @@
 "use client";
 
 import { ReactNode, useState } from "react";
+import { ChevronDown } from "lucide-react";
 
 export function Collapsible({
   title,
@@ -14,7 +15,7 @@ export function Collapsible({
   const [open, setOpen] = useState(defaultOpen);
 
   return (
-    <div className="rounded-xl2 border border-ink-100/60 bg-white">
+    <div className="rounded-xl2 border border-ink-100 bg-white shadow-soft">
       <button
         type="button"
         onClick={() => setOpen((v) => !v)}
@@ -22,9 +23,9 @@ export function Collapsible({
         aria-expanded={open}
       >
         <span>{title}</span>
-        <span className={`transition-transform ${open ? "rotate-180" : ""}`}>⌄</span>
+        <ChevronDown size={18} className={`text-ink-400 transition-transform duration-200 ${open ? "rotate-180" : ""}`} />
       </button>
-      {open && <div className="border-t border-ink-100/60 px-4 py-3">{children}</div>}
+      {open && <div className="fade-in border-t border-ink-100 px-4 py-3">{children}</div>}
     </div>
   );
 }

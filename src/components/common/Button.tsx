@@ -14,9 +14,9 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const VARIANT_CLASSES: Record<Variant, string> = {
-  primary: "bg-aqua-500 text-white hover:bg-aqua-600 active:bg-aqua-700",
+  primary: "bg-aqua-500 text-white shadow-tap hover:bg-aqua-600 active:bg-aqua-700",
   secondary: "bg-aqua-50 text-aqua-700 hover:bg-aqua-100 active:bg-aqua-200",
-  ghost: "bg-transparent text-ink-600 hover:bg-ink-100/40",
+  ghost: "bg-transparent text-ink-600 hover:bg-ink-100/60",
   danger: "bg-risk-50 text-risk-600 hover:bg-risk-100",
 };
 
@@ -40,7 +40,7 @@ export function Button({
     <button
       disabled={disabled || loading}
       aria-busy={loading}
-      className={`inline-flex items-center justify-center gap-2 rounded-xl2 font-medium transition-colors active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-40 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500 ${
+      className={`inline-flex items-center justify-center gap-2 rounded-xl2 font-medium transition-all duration-150 active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40 disabled:active:scale-100 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aqua-500 ${
         VARIANT_CLASSES[variant]
       } ${SIZE_CLASSES[size]} ${fullWidth ? "w-full" : ""} ${className}`}
       {...rest}

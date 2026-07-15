@@ -22,7 +22,7 @@ export default function SharedStopPage() {
       <h1 className="mt-1 text-xl font-semibold text-ink-800">{payload.tripTitle}</h1>
       <p className="mt-1 text-sm text-ink-500">{formatDateWithWeekday(payload.date)}</p>
 
-      <div className="mt-5 rounded-xl2 bg-white p-5 shadow-soft">
+      <div className="mt-5 rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
         <p className="text-sm text-ink-500">會合地點</p>
         <p className="mt-1 text-lg font-medium text-ink-800">{payload.stopName}</p>
         <p className="mt-0.5 text-sm text-ink-400">{payload.address}</p>

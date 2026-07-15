@@ -22,7 +22,7 @@ export function TripReview({ onSubmit }: { onSubmit: (outcomes: ReviewOutcome[])
   };
 
   return (
-    <div className="rounded-xl2 bg-white p-5 shadow-soft">
+    <div className="rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
       <p className="text-base font-medium text-ink-800">今天抵達狀況如何？</p>
       <p className="mt-1 text-xs text-ink-400">可以複選，這會幫助之後的時間估算更準確。</p>
       <div className="mt-3 flex flex-wrap gap-2">

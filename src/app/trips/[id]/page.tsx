@@ -18,6 +18,7 @@ import { resetTripProgress } from "@/lib/tripProgress";
 import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
 import { createEmptyStop, Stop } from "@/types/stop";
 import { EmptyState } from "@/components/home/EmptyState";
+import { CardSkeleton } from "@/components/common/Skeleton";
 
 export default function TripDetailPage() {
   const params = useParams<{ id: string }>();
@@ -35,7 +36,7 @@ export default function TripDetailPage() {
   const plan = useMemo(() => (trip ? computeTripPlan(trip, now) : null), [trip, now]);
 
   if (isLoading) {
-    return <p className="text-sm text-ink-400">載入中…</p>;
+    return <CardSkeleton />;
   }
 
   if (!trip) {

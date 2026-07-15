@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useSettings } from "@/hooks/useSettings";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ListItemSkeleton } from "@/components/common/Skeleton";
 import { TransportModeSelect } from "@/components/forms/TransportModeSelect";
 import { DurationInput } from "@/components/forms/DurationInput";
 import { Collapsible } from "@/components/common/Collapsible";
@@ -19,7 +20,15 @@ export default function SettingsPage() {
   const [newOriginAddress, setNewOriginAddress] = useState("");
   const [newPrepName, setNewPrepName] = useState("");
 
-  if (isLoading) return <p className="text-sm text-ink-400">載入中…</p>;
+  if (isLoading) {
+    return (
+      <div className="space-y-3">
+        <ListItemSkeleton />
+        <ListItemSkeleton />
+        <ListItemSkeleton />
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">

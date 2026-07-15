@@ -1,5 +1,7 @@
 "use client";
 
+import { Minus, Plus } from "lucide-react";
+
 interface DurationInputProps {
   label: string;
   minutes: number;
@@ -21,9 +23,9 @@ export function DurationInput({ label, minutes, onChange, step = 5, min = 0, max
           type="button"
           onClick={() => onChange(clamp(minutes - step))}
           aria-label={`減少${label}`}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-aqua-50 text-aqua-700 hover:bg-aqua-100"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-aqua-50 text-aqua-700 transition-colors active:scale-95 hover:bg-aqua-100"
         >
-          −
+          <Minus size={16} />
         </button>
         <input
           type="number"
@@ -36,9 +38,9 @@ export function DurationInput({ label, minutes, onChange, step = 5, min = 0, max
           type="button"
           onClick={() => onChange(clamp(minutes + step))}
           aria-label={`增加${label}`}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-aqua-50 text-aqua-700 hover:bg-aqua-100"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-aqua-50 text-aqua-700 transition-colors active:scale-95 hover:bg-aqua-100"
         >
-          ＋
+          <Plus size={16} />
         </button>
       </div>
       {hint && <p className="mt-1 text-xs text-ink-400">{hint}</p>}

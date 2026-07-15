@@ -5,6 +5,7 @@ import { useTrips } from "@/hooks/useTrips";
 import { TripCard } from "@/components/trip/TripCard";
 import { EmptyState } from "@/components/home/EmptyState";
 import { PageHeader } from "@/components/layout/PageHeader";
+import { ListItemSkeleton } from "@/components/common/Skeleton";
 import { classifyDateGroup } from "@/lib/dateUtils";
 import { Trip } from "@/types/trip";
 
@@ -41,7 +42,11 @@ export default function TripsPage() {
     return (
       <div>
         <PageHeader title="行程" />
-        <p className="text-sm text-ink-400">載入中…</p>
+        <div className="space-y-2">
+          <ListItemSkeleton />
+          <ListItemSkeleton />
+          <ListItemSkeleton />
+        </div>
       </div>
     );
   }

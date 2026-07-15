@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useRef, useState } from "react";
+import { GripVertical, X, Plus } from "lucide-react";
 import { DEFAULT_PREPARATION_MINUTES, PreparationTask } from "@/types/preparation";
 import { generateId } from "@/lib/id";
 import { Button } from "@/components/common/Button";
@@ -82,10 +83,10 @@ export function PreparationTaskManager({ tasks, onChange, suggestMinutes }: Prep
             }
             dragIndex.current = null;
           }}
-          className="flex items-center gap-2 rounded-xl2 border border-ink-100 bg-white px-3 py-2.5"
+          className="flex items-center gap-2 rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 shadow-soft"
         >
           <span className="cursor-grab select-none text-ink-300" aria-hidden>
-            ⠿
+            <GripVertical size={16} />
           </span>
           <input
             type="checkbox"
@@ -106,9 +107,9 @@ export function PreparationTaskManager({ tasks, onChange, suggestMinutes }: Prep
             type="button"
             onClick={() => removeTask(task.id)}
             aria-label={`刪除${task.name}`}
-            className="rounded-full p-1 text-ink-300 hover:bg-risk-50 hover:text-risk-500"
+            className="rounded-full p-1 text-ink-300 transition-colors hover:bg-risk-50 hover:text-risk-500"
           >
-            ✕
+            <X size={16} />
           </button>
         </div>
       ))}
@@ -123,6 +124,7 @@ export function PreparationTaskManager({ tasks, onChange, suggestMinutes }: Prep
             className="flex-1 rounded-xl2 border border-ink-100 bg-white px-3 py-2 text-sm text-ink-800 focus:border-aqua-400 focus:outline-none"
           />
           <Button size="md" variant="secondary" onClick={addTask}>
+            <Plus size={16} />
             新增
           </Button>
         </div>

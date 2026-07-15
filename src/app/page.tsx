@@ -5,6 +5,7 @@ import { useTrips } from "@/hooks/useTrips";
 import { useNow } from "@/hooks/useNow";
 import { NextStopCard } from "@/components/home/NextStopCard";
 import { EmptyState } from "@/components/home/EmptyState";
+import { CardSkeleton } from "@/components/common/Skeleton";
 import { TripReview } from "@/components/trip/TripReview";
 import { PageHeader } from "@/components/layout/PageHeader";
 import { computeTripPlan } from "@/lib/timeCalculation";
@@ -27,7 +28,7 @@ export default function HomePage() {
     return (
       <div>
         <PageHeader title="今天要去哪裡？" subtitle={APP_CONFIG.shortTagline} />
-        <p className="text-sm text-ink-400">載入中…</p>
+        <CardSkeleton />
       </div>
     );
   }
