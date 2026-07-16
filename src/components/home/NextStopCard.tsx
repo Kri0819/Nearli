@@ -2,9 +2,9 @@
 
 import Link from "next/link";
 import { Trip } from "@/types/trip";
-import { Stop, TRANSPORT_MODE_LABELS } from "@/types/stop";
+import { Stop } from "@/types/stop";
 import { TripPlan } from "@/types/timeline";
-import { formatTime, describeCountdown, isFutureDateKey, formatMonthDay, describeDayCountdown, diffMinutes } from "@/lib/dateUtils";
+import { formatTime, describeCountdown, isFutureDateKey, formatMonthDay, describeDayCountdown } from "@/lib/dateUtils";
 import { buildNavigationUrl } from "@/lib/mapsAdapter";
 import { predictArrivalIfDepartingNow, describeDepartedStatus } from "@/lib/liveStatus";
 import {
@@ -15,10 +15,37 @@ import {
   assessPreparationRisk,
   describeTaskOverrun,
 } from "@/lib/preparationTimeline";
+import { getTaskGoPhrase, getTaskDonePhrase } from "@/lib/prepCopy";
 import { Button } from "@/components/common/Button";
 import { StatusBadge } from "@/components/trip/StatusBadge";
 
 type Stage = "future" | "before_prep" | "ready_to_prep" | "preparing" | "awaiting_departure" | "departed";
+
+/** 卡片的三個固定區塊：目前任務、剩餘時間、下一步 */
+function NowSection({ title, sub }: { title: string; sub?: string }) {
+  return (
+    <div>
+      <p className="text-2xl font-semibold leading-snug tracking-tight text-ink-800">{title}</p>
+      {sub && <p className="mt-1 text-sm text-ink-500">{sub}</p>}
+    </div>
+  );
+}
+
+function RemainingSection({ children }: { children: string }) {
+  return (
+    <span className="mt-3 inline-block rounded-full bg-aqua-50 px-3 py-1 text-sm font-medium text-aqua-700">
+      {children}
+    </span>
+  );
+}
+
+function NextStepSection({ label }: { label: string }) {
+  return (
+    <p className="mt-4 text-sm text-ink-400">
+      下一步 <span className="text-ink-600">{label}</span>
+    </p>
+  );
+}
 
 export function NextStopCard({
   trip,
@@ -78,236 +105,167 @@ export function NextStopCard({
 
   return (
     <div className="fade-in relative overflow-hidden rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
-      {/* 柔和單色裝飾圓，呼應「有一點可愛」但不使用鮮豔漸層 */}
-      <div
-        className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-aqua-100/50"
-        aria-hidden
-      />
+      {/* 柔和單色裝飾圓，不使用鮮豔漸層 */}
+      <div className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-aqua-100/50" aria-hidden />
       <div className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 rounded-full bg-aqua-100/60" aria-hidden />
+
       <div className="relative">
-      {/* 1. 卡片頂部 */}
-      <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0">
-          <p className="truncate text-sm font-medium text-ink-600">{trip.title || "未命名行程"}</p>
-          <p className="text-xs text-ink-400">
-            第 {stopIndex + 1}／{totalStops} 站
-            {!isFuture && ` · ${formatMonthDay(trip.date)}`}
-          </p>
+        {/* 頂部：行程與站別，安靜地放在角落，不搶主要任務的位置 */}
+        <div className="flex items-start justify-between gap-2">
+          <div className="min-w-0">
+            <p className="truncate text-sm font-medium text-ink-600">{trip.title || "未命名行程"}</p>
+            <p className="text-xs text-ink-400">
+              第 {stopIndex + 1}／{totalStops} 站
+              {!isFuture && ` · ${formatMonthDay(trip.date)}`}
+            </p>
+          </div>
+          {!isFuture && <StatusBadge status={displayRiskStatus} />}
         </div>
-        {!isFuture && <StatusBadge status={displayRiskStatus} />}
-      </div>
 
-      {/* 2 + 3. 主要行動時間與倒數資訊 */}
-      <div className="mt-4">
-        {stage === "future" && (
-          <>
-            <p className="text-2xl font-semibold tabular-nums leading-tight text-ink-800">
-              {formatMonthDay(trip.date)}
-            </p>
-            {plan.prepStartAt && (
-              <span className="mt-2 inline-block rounded-full bg-aqua-50 px-3 py-1 text-xs font-medium text-aqua-700">
-                {describeDayCountdown(plan.prepStartAt, now)}
-              </span>
-            )}
-            <dl className="mt-4 space-y-2 text-sm">
-              {plan.prepStartAt && (
-                <div className="flex items-baseline gap-2">
-                  <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(plan.prepStartAt)}</dt>
-                  <dd className="text-ink-500">開始準備</dd>
-                </div>
-              )}
-              <div className="flex items-baseline gap-2">
-                <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(stopPlan.mustLeaveAt)}</dt>
-                <dd className="text-ink-500">前必須離開</dd>
-              </div>
-              <div className="flex items-baseline gap-2">
-                <dt className="w-16 shrink-0 tabular-nums text-ink-800">{formatTime(stopPlan.targetArrivalAt)}</dt>
-                <dd className="text-ink-500">抵達{stop.name || "未命名地點"}</dd>
-              </div>
-            </dl>
-          </>
-        )}
-
-        {stage === "before_prep" && activeTask && (
-          <>
-            <p className="text-xs font-medium text-aqua-600">下一個動作</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
-              {formatTime(activeTask.plannedStartAt)}
-            </p>
-            <p className="text-sm text-ink-500">開始{activeTask.name}</p>
-            <span className="mt-2 inline-block rounded-full bg-aqua-50 px-3 py-1 text-xs font-medium text-aqua-700">
-              {describeCountdown(activeTask.plannedStartAt, now)}
-            </span>
-            <p className="mt-2 text-xs text-ink-400">{formatTime(stopPlan.mustLeaveAt)} 前必須離開</p>
-          </>
-        )}
-
-        {stage === "ready_to_prep" && activeTask && (
-          <>
-            <p className="text-xs font-medium text-aqua-600">現在開始</p>
-            <p className="mt-1 text-3xl font-semibold leading-tight tracking-tight text-ink-800">{activeTask.name}</p>
-            <p className="text-sm text-ink-500">{formatTime(activeTask.plannedEndAt)} 前完成</p>
-          </>
-        )}
-
-        {stage === "preparing" && activeTask && (
-          <>
-            <p className="text-xs font-medium text-aqua-600">現在去{activeTask.name}</p>
-            <p className="mt-1 text-3xl font-semibold leading-tight tracking-tight text-ink-800">
-              已進行 {Math.max(0, diffMinutes(now, activeTask.actualStartedAt ?? now))} 分鐘
-            </p>
-            <p className="text-sm text-ink-500">{formatTime(activeTask.plannedEndAt)} 前完成</p>
-            {overrunMessage && (
-              <span className="mt-2 inline-block rounded-full bg-warn-50 px-3 py-1 text-xs font-medium text-warn-500">
-                {overrunMessage}
-              </span>
-            )}
-            {nextTask && <p className="mt-2 text-xs text-ink-400">接下來：{nextTask.name}</p>}
-            {prepRisk && (
-              <p className="mt-2 text-xs text-ink-500">
-                {overrunMessage && prepRisk.status !== "comfortable" ? "後續時間已重新整理，" : ""}
-                {prepRisk.message}
+        {/* 現在該做什麼：這是整張卡片唯一重要的事 */}
+        <div className="mt-4">
+          {stage === "future" && (
+            <>
+              <NowSection title={formatMonthDay(trip.date)} />
+              {plan.prepStartAt && <RemainingSection>{describeDayCountdown(plan.prepStartAt, now)}</RemainingSection>}
+              <p className="mt-3 text-sm text-ink-500">
+                {formatTime(stopPlan.mustLeaveAt)} 前出發，{formatTime(stopPlan.targetArrivalAt)} 抵達{stop.name || "目的地"}
               </p>
-            )}
-          </>
-        )}
+            </>
+          )}
 
-        {stage === "awaiting_departure" && (
-          <>
-            <p className="text-xs font-medium text-aqua-600">{isFirstStop ? "準備完成" : "必須離開"}</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
-              {formatTime(stopPlan.mustLeaveAt)}
-            </p>
-            <p className="text-sm text-ink-500">前必須離開</p>
-            <span className="mt-2 inline-block rounded-full bg-warn-50 px-3 py-1 text-xs font-medium text-warn-500">
-              距離必須離開{describeCountdown(stopPlan.mustLeaveAt, now)}
-            </span>
-          </>
-        )}
+          {stage === "before_prep" && activeTask && (
+            <>
+              <NowSection title={`接下來是${activeTask.name}`} />
+              <RemainingSection>{describeCountdown(activeTask.plannedStartAt, now)}</RemainingSection>
+              {nextTask && <NextStepSection label={nextTask.name} />}
+            </>
+          )}
 
-        {stage === "departed" && prediction && (
-          <>
-            <p className="text-xs font-medium text-aqua-600">正在前往{stop.name || "下一站"}</p>
-            <p className="mt-1 text-4xl font-semibold tabular-nums leading-tight tracking-tight text-ink-800">
-              {formatTime(prediction.predictedArrivalAt)}
-            </p>
-            <p className="text-sm text-ink-500">預計抵達</p>
-            <span
-              className={`mt-2 inline-block rounded-full px-3 py-1 text-xs font-medium ${
-                stopPlan.riskStatus === "possible_delay" ? "bg-risk-50 text-risk-600" : "bg-aqua-50 text-aqua-700"
-              }`}
-            >
-              {describeDepartedStatus(stop, prediction)}
-            </span>
-          </>
-        )}
-      </div>
+          {stage === "ready_to_prep" && activeTask && (
+            <>
+              <NowSection title={`${getTaskGoPhrase(activeTask.name)}吧。`} sub={`${formatTime(activeTask.plannedEndAt)} 前完成`} />
+              {nextTask && <NextStepSection label={nextTask.name} />}
+            </>
+          )}
 
-      {/* 4. 下一站摘要 */}
-      {stage !== "departed" && stage !== "future" && (
-        <div className="mt-4 rounded-xl2 bg-cream-100 p-3">
-          <p className="truncate text-sm font-medium text-ink-700">{stop.name || "未命名地點"}</p>
-          <p className="mt-0.5 text-xs text-ink-400">{formatTime(stopPlan.targetArrivalAt)} 抵達</p>
-          <p className="mt-1.5 text-xs text-ink-500">
-            {TRANSPORT_MODE_LABELS[stop.transportMode]} {stopPlan.effectiveTravelMinutes} 分鐘
-            {stop.parking.mode !== "none" && `・停車 ${stop.parkingMinutes} 分鐘`}
-            {stop.walkFromParkingMinutes > 0 && `・步行 ${stop.walkFromParkingMinutes} 分鐘`}
-          </p>
+          {stage === "preparing" && activeTask && (
+            <>
+              <NowSection
+                title={getTaskGoPhrase(activeTask.name)}
+                sub={overrunMessage ?? `${formatTime(activeTask.plannedEndAt)} 前完成`}
+              />
+              {nextTask ? <NextStepSection label={nextTask.name} /> : <NextStepSection label="準備出發" />}
+              {prepRisk && prepRisk.status !== "comfortable" && (
+                <p className="mt-2 text-xs text-ink-500">
+                  {overrunMessage ? "後續時間已重新整理，" : ""}
+                  {prepRisk.message}
+                </p>
+              )}
+            </>
+          )}
+
+          {stage === "awaiting_departure" && isFirstStop && (
+            <>
+              <NowSection title="都準備好了" sub="慢慢出門就可以。" />
+              <p className="mt-3 text-xs text-ink-400">{formatTime(stopPlan.mustLeaveAt)} 前出發</p>
+            </>
+          )}
+
+          {stage === "awaiting_departure" && !isFirstStop && (
+            <>
+              <NowSection title="剩下一點點時間" sub="準備出門吧。" />
+              <p className="mt-3 text-xs text-ink-400">{formatTime(stopPlan.mustLeaveAt)} 前出發</p>
+            </>
+          )}
+
+          {stage === "departed" && prediction && (
+            <NowSection title={`正在前往${stop.name || "下一站"}`} sub={describeDepartedStatus(stop, prediction)} />
+          )}
+
+          {(stage === "awaiting_departure" || stage === "before_prep") && displayRiskStatus !== "comfortable" && (
+            <p className="mt-3 text-xs text-ink-500">{stopPlan.statusMessage}</p>
+          )}
         </div>
-      )}
 
-      {stage === "future" && (
-        <div className="mt-4 rounded-xl2 bg-cream-100 p-3">
-          <p className="text-xs text-ink-500">
-            {TRANSPORT_MODE_LABELS[stop.transportMode]} {stopPlan.effectiveTravelMinutes} 分鐘
-            {stop.parking.mode !== "none" && `・停車 ${stop.parkingMinutes} 分鐘`}
-            {stop.walkFromParkingMinutes > 0 && `・步行 ${stop.walkFromParkingMinutes} 分鐘`}
-          </p>
-        </div>
-      )}
+        {/* 主要操作：每個階段只有一個重點動作 */}
+        <div className="mt-5 space-y-2">
+          {stage === "future" && (
+            <div className="grid grid-cols-2 gap-2">
+              <Link href={`/trips/${trip.id}?edit=1`}>
+                <Button variant="secondary" fullWidth size="md">
+                  編輯行程
+                </Button>
+              </Link>
+              <Link href={`/trips/${trip.id}`}>
+                <Button variant="ghost" fullWidth size="md">
+                  查看完整行程
+                </Button>
+              </Link>
+            </div>
+          )}
 
-      {(stage === "awaiting_departure" || stage === "before_prep") && displayRiskStatus !== "comfortable" && (
-        <p className="mt-3 text-xs text-ink-500">{stopPlan.statusMessage}</p>
-      )}
+          {stage === "before_prep" && activeTask && (
+            <Button variant="ghost" fullWidth size="md" onClick={() => onStartTask(activeTask.taskId)}>
+              開始
+            </Button>
+          )}
 
-      {/* 5. 主要操作：每個階段只突出一個主要動作，未來行程不能操作即時進度 */}
-      <div className="mt-4 space-y-2">
-        {stage === "future" && (
-          <div className="grid grid-cols-2 gap-2">
-            <Link href={`/trips/${trip.id}?edit=1`}>
-              <Button variant="secondary" fullWidth size="md">
-                編輯行程
+          {stage === "ready_to_prep" && activeTask && (
+            <>
+              <Button fullWidth onClick={() => onStartTask(activeTask.taskId)}>
+                開始
               </Button>
-            </Link>
+              <button
+                type="button"
+                onClick={() => onSkipTask(activeTask.taskId)}
+                className="w-full text-center text-xs text-ink-400 hover:text-ink-600"
+              >
+                跳過
+              </button>
+            </>
+          )}
+
+          {stage === "preparing" && activeTask && (
+            <>
+              <Button fullWidth onClick={() => onCompleteTask(activeTask.taskId)}>
+                {getTaskDonePhrase(activeTask.name)}
+              </Button>
+              <button
+                type="button"
+                onClick={() => onSkipTask(activeTask.taskId)}
+                className="w-full text-center text-xs text-ink-400 hover:text-ink-600"
+              >
+                跳過
+              </button>
+            </>
+          )}
+
+          {stage === "awaiting_departure" && (
+            <Button fullWidth onClick={onDepart}>
+              我出發了
+            </Button>
+          )}
+          {stage === "departed" && (
+            <div className="grid grid-cols-2 gap-2">
+              <a href={buildNavigationUrl(stop)} target="_blank" rel="noreferrer">
+                <Button variant="secondary" fullWidth>
+                  開始導航
+                </Button>
+              </a>
+              <Button fullWidth onClick={onArrive}>
+                我到了
+              </Button>
+            </div>
+          )}
+          {stage !== "future" && (
             <Link href={`/trips/${trip.id}`}>
               <Button variant="ghost" fullWidth size="md">
                 查看完整行程
               </Button>
             </Link>
-          </div>
-        )}
-
-        {stage === "before_prep" && activeTask && (
-          <Button variant="ghost" fullWidth size="md" onClick={() => onStartTask(activeTask.taskId)}>
-            提早開始
-          </Button>
-        )}
-
-        {stage === "ready_to_prep" && activeTask && (
-          <>
-            <Button fullWidth onClick={() => onStartTask(activeTask.taskId)}>
-              開始這一步
-            </Button>
-            <button
-              type="button"
-              onClick={() => onSkipTask(activeTask.taskId)}
-              className="w-full text-center text-xs text-ink-400 hover:text-ink-600"
-            >
-              跳過這一步
-            </button>
-          </>
-        )}
-
-        {stage === "preparing" && activeTask && (
-          <>
-            <Button fullWidth onClick={() => onCompleteTask(activeTask.taskId)}>
-              完成，下一步
-            </Button>
-            <button
-              type="button"
-              onClick={() => onSkipTask(activeTask.taskId)}
-              className="w-full text-center text-xs text-ink-400 hover:text-ink-600"
-            >
-              跳過這一步
-            </button>
-          </>
-        )}
-
-        {stage === "awaiting_departure" && (
-          <Button fullWidth onClick={onDepart}>
-            我已經出發
-          </Button>
-        )}
-        {stage === "departed" && (
-          <div className="grid grid-cols-2 gap-2">
-            <a href={buildNavigationUrl(stop)} target="_blank" rel="noreferrer">
-              <Button variant="secondary" fullWidth>
-                開始導航
-              </Button>
-            </a>
-            <Button fullWidth onClick={onArrive}>
-              我已抵達
-            </Button>
-          </div>
-        )}
-        {stage !== "future" && (
-          <Link href={`/trips/${trip.id}`}>
-            <Button variant="ghost" fullWidth size="md">
-              查看完整行程
-            </Button>
-          </Link>
-        )}
-      </div>
+          )}
+        </div>
       </div>
     </div>
   );

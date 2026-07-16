@@ -3,7 +3,7 @@
 這份文件是專案的地圖，因為 Next.js App Router 的功能會分散在多個檔案裡。
 **每次版本更新都必須同步更新這份文件**，尤其是新增檔案、搬動邏輯，或新增/移除頁面時。
 
-目前版本：v0.1.5
+目前版本：v0.1.6
 
 ---
 
@@ -101,6 +101,8 @@ AI 解析相關：`src/lib/aiParser.ts`（本地 mock parser + 呼叫 API 的 cl
 
 `src/lib/prepSuggestions.ts`：`getSuggestedPreparationMinutes(taskName, trips)`，依過去同名事項的實際花費時間，用加權平均提出建議分鐘數（不是大型 AI，也不會自動覆蓋使用者設定）。
 
+`src/lib/prepCopy.ts`（v0.1.6 新增）：`getTaskGoPhrase` / `getTaskDonePhrase`，把任務名稱轉成自然的中文短句（例如「洗澡」→「現在去洗澡」／「洗好了」），純呈現用途，不影響任何資料或計算。
+
 ## 10. 進度更新函式位置
 
 `src/lib/tripProgress.ts`：
@@ -165,3 +167,4 @@ AI 解析相關：`src/lib/aiParser.ts`（本地 mock parser + 呼叫 API 的 cl
 - **v0.1.3**：正式命名為 Nearli；準備事項升級為逐步流程（`preparationTimeline.ts`、`tripProgress.ts` 新增每個事項的開始/完成/跳過）；新增 `docs/PROJECT_MAP.md`（本檔案）。
 - **v0.1.4**：純視覺與觸感更新，資料結構與時間計算沒有變動。補齊 `tailwind.config.ts` 缺少的 `ink-50/100/200/300` 色階（修正大量 `border-ink-100` 等類別實際上沒有作用的問題）；全面改用 `lucide-react` 取代殘留文字符號圖示；卡片改為雙層陰影＋細邊框；`Modal` 改為原生 bottom sheet 手感；讀取狀態改用骨架屏（`src/components/common/Skeleton.tsx`）。
 - **v0.1.5**：參考其他 App 截圖的第二輪視覺微調。`ghost` 按鈕改為實線外框；區塊小標題統一為淺灰大寫字距；首頁主卡加入柔和單色裝飾圓（刻意不用漸層，維持既有設計原則）。
+- **v0.1.6**：重新定義首頁的產品體驗（純文案與呈現方式，資料結構無變動）。首頁大標題改為「現在該做的事」，時間退為輔助資訊；拿掉首頁的抵達/交通/停車/步行資訊（移到行程詳情）；按鈕文案改為依任務調整的自然說法；行程回顧文案更口語化。新增 `src/lib/prepCopy.ts`。

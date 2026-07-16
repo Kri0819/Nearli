@@ -12,12 +12,12 @@ export type ReviewOutcome =
 
 export const REVIEW_OUTCOME_LABELS: Record<ReviewOutcome, string> = {
   earlier_than_planned: "比預計早",
-  on_time: "差不多準時",
-  travel_took_longer: "路上花得比較久",
-  parking_took_longer: "找車位花得比較久",
-  got_lost: "迷路或騎過頭",
-  prep_not_enough: "準備時間不夠",
-  entry_took_longer: "找入口花得比較久",
+  on_time: "都很順利",
+  travel_took_longer: "路上塞車",
+  parking_took_longer: "找車位",
+  got_lost: "迷路了",
+  prep_not_enough: "準備太久",
+  entry_took_longer: "找入口",
 };
 
 /** 日夜區段 */

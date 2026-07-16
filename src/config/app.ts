@@ -8,9 +8,9 @@ export const APP_CONFIG = {
   displayName: "Nearli",
   shortName: "Nearli",
   /** 版本號 */
-  version: "0.1.5",
+  version: "0.1.6",
   /** 版本代稱 */
-  versionCodename: "視覺細節微調",
+  versionCodename: "現在，下一步",
   /**
    * localStorage 資料結構版本，用於未來遷移。
    * v0.1.1：Trip 新增 actualPrepStartTime 欄位
@@ -19,6 +19,7 @@ export const APP_CONFIG = {
    *         並將這兩個欄位一併納入「未來行程不可有進度資料」的清理範圍
    * v0.1.4：純視覺更新，資料結構無變動
    * v0.1.5：純視覺更新，資料結構無變動
+   * v0.1.6：純文案與呈現方式更新，資料結構無變動
    */
   storageSchemaVersion: 4,
   /** 預設語言 */
