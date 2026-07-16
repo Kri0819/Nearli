@@ -35,7 +35,7 @@ export default function SettingsPage() {
       <PageHeader title="設定" />
 
       <section>
-        <h2 className="mb-2 text-sm font-medium text-ink-600">預設交通方式</h2>
+        <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">預設交通方式</h2>
         <TransportModeSelect
           value={settings.defaultTransportMode}
           onChange={(mode) => updateSettings({ ...settings, defaultTransportMode: mode })}
@@ -43,7 +43,7 @@ export default function SettingsPage() {
       </section>
 
       <section>
-        <h2 className="mb-2 text-sm font-medium text-ink-600">預設提前抵達 / 停車時間</h2>
+        <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">預設提前抵達 / 停車時間</h2>
         <div className="space-y-3">
           <DurationInput
             label="預設提前抵達時間"

@@ -89,7 +89,7 @@ export function ConfirmItinerary({
       </label>
 
       <div>
-        <h3 className="mb-2 text-sm font-medium text-ink-600">行程前準備事項</h3>
+        <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">行程前準備事項</h3>
         <PreparationTaskManager
           tasks={trip.preparationTasks}
           onChange={(tasks) => setTrip((t) => ({ ...t, preparationTasks: tasks }))}
@@ -98,7 +98,7 @@ export function ConfirmItinerary({
       </div>
 
       <div>
-        <h3 className="mb-2 text-sm font-medium text-ink-600">停靠點</h3>
+        <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">停靠點</h3>
         <div className="space-y-2">
           {orderedStops.map((stop, index) => (
             <StopCard

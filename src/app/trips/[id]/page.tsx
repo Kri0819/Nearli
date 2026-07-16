@@ -157,7 +157,7 @@ export default function TripDetailPage() {
           </label>
 
           <div>
-            <h3 className="mb-2 text-sm font-medium text-ink-600">行程前準備事項</h3>
+            <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">行程前準備事項</h3>
             <PreparationTaskManager
               tasks={trip.preparationTasks}
               onChange={(tasks) => updateTrip({ ...trip, preparationTasks: tasks })}
@@ -167,7 +167,7 @@ export default function TripDetailPage() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-sm font-medium text-ink-600">停靠點</h3>
+              <h3 className="text-xs font-medium uppercase tracking-wide text-ink-400">停靠點</h3>
               <button
                 type="button"
                 className="text-sm text-aqua-600 hover:underline"

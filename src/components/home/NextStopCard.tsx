@@ -77,7 +77,14 @@ export function NextStopCard({
   const nextTask = activeTask ? getNextUpcomingTask(prepPlans, activeTask.taskId) : null;
 
   return (
-    <div className="fade-in rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
+    <div className="fade-in relative overflow-hidden rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
+      {/* 柔和單色裝飾圓，呼應「有一點可愛」但不使用鮮豔漸層 */}
+      <div
+        className="pointer-events-none absolute -right-8 -top-10 h-32 w-32 rounded-full bg-aqua-100/50"
+        aria-hidden
+      />
+      <div className="pointer-events-none absolute -right-2 -top-2 h-16 w-16 rounded-full bg-aqua-100/60" aria-hidden />
+      <div className="relative">
       {/* 1. 卡片頂部 */}
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0">
@@ -300,6 +307,7 @@ export function NextStopCard({
             </Button>
           </Link>
         )}
+      </div>
       </div>
     </div>
   );
