@@ -15,10 +15,31 @@ import { createEmptyTrip } from "@/types/trip";
 import { createEmptyStop, Stop } from "@/types/stop";
 import { createDefaultPreparationTasks } from "@/types/preparation";
 import { ParsedItinerary } from "@/types/ai";
-import { toDateKey } from "@/lib/dateUtils";
+import { toDateKey, formatDateWithWeekday } from "@/lib/dateUtils";
 import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
 
 type Tab = "ai" | "manual";
+type WizardStep = 0 | 1 | 2 | 3;
+const STEP_COUNT = 4;
+
+/** 步驟進度：幾個小圓點，安靜地表示「還有幾步」，不是表單裡的必填星號 */
+function StepDots({ step }: { step: WizardStep }) {
+  return (
+    <div className="mb-8 flex justify-center gap-1.5">
+      {Array.from({ length: STEP_COUNT }).map((_, i) => (
+        <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === step ? "bg-aqua-500" : "bg-ink-200"}`} />
+      ))}
+    </div>
+  );
+}
+
+function QuietBack({ onClick }: { onClick: () => void }) {
+  return (
+    <button type="button" onClick={onClick} className="mb-6 text-sm text-ink-400 hover:text-ink-600">
+      ← 上一步
+    </button>
+  );
+}
 
 export default function NewTripPage() {
   const [tab, setTab] = useState<Tab>("ai");
@@ -26,6 +47,7 @@ export default function NewTripPage() {
   const { trips, addTrip } = useTrips();
   const router = useRouter();
 
+  const [step, setStep] = useState<WizardStep>(0);
   const [draft, setDraft] = useState(() => {
     const trip = createEmptyTrip();
     trip.date = toDateKey(new Date());
@@ -42,13 +64,14 @@ export default function NewTripPage() {
     router.push(`/trips/${draft.id}`);
   };
 
-  const canSaveManual = draft.title.trim().length > 0 && draft.date.length > 0 && orderedStops.every((s) => s.name.trim());
+  const step0Valid = draft.title.trim().length > 0 && draft.date.length > 0;
+  const step1Valid = orderedStops.length > 0;
 
   return (
     <div>
-      <PageHeader title="新增行程" />
+      <PageHeader title="新增行程" compact />
 
-      <div className="mb-5 flex rounded-xl2 bg-aqua-50 p-1">
+      <div className="mb-6 flex rounded-xl2 bg-aqua-50 p-1">
         <button
           onClick={() => setTab("ai")}
           className={`flex-1 rounded-xl2 py-2 text-sm font-medium transition-colors ${
@@ -82,93 +105,130 @@ export default function NewTripPage() {
         ))}
 
       {tab === "manual" && (
-        <div className="space-y-5">
-          <label className="block">
-            <span className="mb-1 block text-sm text-ink-500">行程名稱</span>
-            <input
-              value={draft.title}
-              onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-              placeholder="例如：週六約會"
-              className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 text-ink-800 focus:border-aqua-400 focus:outline-none"
-            />
-          </label>
+        <div>
+          <StepDots step={step} />
 
-          <label className="block">
-            <span className="mb-1 block text-sm text-ink-500">日期</span>
-            <input
-              type="date"
-              value={draft.date}
-              onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
-              className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 text-ink-800 focus:border-aqua-400 focus:outline-none"
-            />
-          </label>
+          {/* Step 1：哪一天？ */}
+          {step === 0 && (
+            <div className="fade-in">
+              <p className="text-2xl font-semibold tracking-tight text-ink-800">哪一天？</p>
+              <div className="mt-6 space-y-5">
+                <input
+                  type="date"
+                  value={draft.date}
+                  onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
+                  className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-3 text-lg text-ink-800 focus:border-aqua-400 focus:outline-none"
+                />
+                <label className="block">
+                  <span className="mb-1 block text-sm text-ink-500">這趟行程叫什麼？</span>
+                  <input
+                    value={draft.title}
+                    onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+                    placeholder="例如：週六約會"
+                    className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 text-ink-800 focus:border-aqua-400 focus:outline-none"
+                  />
+                </label>
+              </div>
+              <Button size="lg" fullWidth className="mt-8" disabled={!step0Valid} onClick={() => setStep(1)}>
+                下一步
+              </Button>
+            </div>
+          )}
 
-          <label className="block">
-            <span className="mb-1 block text-sm text-ink-500">第一站的出發地</span>
-            <input
-              value={draft.originAddress}
-              onChange={(e) => setDraft((d) => ({ ...d, originAddress: e.target.value }))}
-              placeholder="例如：住家"
-              className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 text-ink-800 focus:border-aqua-400 focus:outline-none"
-            />
-          </label>
+          {/* Step 2：第一站去哪？／下一站？ */}
+          {step === 1 && (
+            <div className="fade-in">
+              <QuietBack onClick={() => setStep(0)} />
+              <p className="text-2xl font-semibold tracking-tight text-ink-800">
+                {orderedStops.length === 0 ? "第一站去哪？" : "下一站？"}
+              </p>
+              <p className="mt-1 text-sm text-ink-400">{formatDateWithWeekday(draft.date)}</p>
 
-          <div>
-            <h3 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">行程前準備事項</h3>
-            <PreparationTaskManager
-              tasks={draft.preparationTasks}
-              onChange={(tasks) => setDraft((d) => ({ ...d, preparationTasks: tasks }))}
-              suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
-            />
-          </div>
+              {orderedStops.length > 0 && (
+                <div className="mt-6 space-y-2">
+                  {orderedStops.map((stop, index) => (
+                    <StopCard
+                      key={stop.id}
+                      stop={stop}
+                      index={index}
+                      onDragStart={() => setDragFromIndex(index)}
+                      onDragOver={(e) => e.preventDefault()}
+                      onDrop={() => {
+                        const from = dragFromIndex;
+                        if (from === null || from === index) return;
+                        const next = [...orderedStops];
+                        const [moved] = next.splice(from, 1);
+                        next.splice(index, 0, moved);
+                        setDraft((d) => ({ ...d, stops: next.map((s, i) => ({ ...s, order: i })) }));
+                        setDragFromIndex(null);
+                      }}
+                      onEdit={() => setEditingStop(stop)}
+                      onDuplicate={() =>
+                        setDraft((d) => ({
+                          ...d,
+                          stops: [...d.stops, { ...stop, id: `stop-${Date.now()}`, order: d.stops.length }],
+                        }))
+                      }
+                      onDelete={() => setDraft((d) => ({ ...d, stops: d.stops.filter((s) => s.id !== stop.id) }))}
+                    />
+                  ))}
+                </div>
+              )}
 
-          <div>
-            <div className="mb-2 flex items-center justify-between">
-              <h3 className="text-xs font-medium uppercase tracking-wide text-ink-400">停靠點</h3>
-              <button
-                type="button"
-                className="text-sm text-aqua-600 hover:underline"
+              <Button
+                variant="secondary"
+                fullWidth
+                className="mt-6"
                 onClick={() => setEditingStop(createEmptyStop(draft.stops.length))}
               >
-                ＋ 新增停靠點
-              </button>
+                {orderedStops.length === 0 ? "加第一站" : "再加一站"}
+              </Button>
+
+              {step1Valid && (
+                <Button size="lg" fullWidth className="mt-3" onClick={() => setStep(2)}>
+                  這樣就好了
+                </Button>
+              )}
             </div>
+          )}
 
-            {orderedStops.length === 0 && <p className="text-sm text-ink-400">還沒有加入任何停靠點。</p>}
-
-            <div className="space-y-2">
-              {orderedStops.map((stop, index) => (
-                <StopCard
-                  key={stop.id}
-                  stop={stop}
-                  index={index}
-                  onDragStart={() => setDragFromIndex(index)}
-                  onDragOver={(e) => e.preventDefault()}
-                  onDrop={() => {
-                    const from = dragFromIndex;
-                    if (from === null || from === index) return;
-                    const next = [...orderedStops];
-                    const [moved] = next.splice(from, 1);
-                    next.splice(index, 0, moved);
-                    setDraft((d) => ({ ...d, stops: next.map((s, i) => ({ ...s, order: i })) }));
-                    setDragFromIndex(null);
-                  }}
-                  onEdit={() => setEditingStop(stop)}
-                  onDuplicate={() =>
-                    setDraft((d) => ({
-                      ...d,
-                      stops: [...d.stops, { ...stop, id: `stop-${Date.now()}`, order: d.stops.length }],
-                    }))
-                  }
-                  onDelete={() => setDraft((d) => ({ ...d, stops: d.stops.filter((s) => s.id !== stop.id) }))}
+          {/* Step 3：出門前要做什麼？ */}
+          {step === 2 && (
+            <div className="fade-in">
+              <QuietBack onClick={() => setStep(1)} />
+              <p className="text-2xl font-semibold tracking-tight text-ink-800">出門前要做什麼？</p>
+              <p className="mt-1 text-sm text-ink-400">可以跳過，之後隨時可以加。</p>
+              <div className="mt-6">
+                <PreparationTaskManager
+                  tasks={draft.preparationTasks}
+                  onChange={(tasks) => setDraft((d) => ({ ...d, preparationTasks: tasks }))}
+                  suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
                 />
-              ))}
+              </div>
+              <Button size="lg" fullWidth className="mt-8" onClick={() => setStep(3)}>
+                下一步
+              </Button>
             </div>
-          </div>
+          )}
 
-          <Button fullWidth disabled={!canSaveManual} onClick={saveDraft}>
-            儲存行程
-          </Button>
+          {/* Step 4：完成 */}
+          {step === 3 && (
+            <div className="fade-in">
+              <QuietBack onClick={() => setStep(2)} />
+              <p className="text-2xl font-semibold tracking-tight text-ink-800">都準備好了</p>
+              <div className="mt-6 space-y-1 text-sm text-ink-500">
+                <p className="text-base font-medium text-ink-800">{draft.title}</p>
+                <p>{formatDateWithWeekday(draft.date)}</p>
+                <p>
+                  {orderedStops.length} 個停靠點
+                  {orderedStops[0] && `，第一站：${orderedStops[0].name || "未命名地點"}`}
+                </p>
+              </div>
+              <Button size="lg" fullWidth className="mt-8" onClick={saveDraft}>
+                建立行程
+              </Button>
+            </div>
+          )}
         </div>
       )}
 

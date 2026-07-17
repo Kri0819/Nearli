@@ -14,7 +14,17 @@ const OPTIONS: ReviewOutcome[] = [
   "on_time",
 ];
 
-export function TripReview({ onSubmit }: { onSubmit: (outcomes: ReviewOutcome[]) => void }) {
+/**
+ * 對話式回顧：一個大問題、幾個大按鈕，不是問卷、不是設定。
+ * 資料邏輯不變：選好的項目一次送出（selected 仍是 ReviewOutcome[]）。
+ */
+export function TripReview({
+  tripTitle,
+  onSubmit,
+}: {
+  tripTitle: string;
+  onSubmit: (outcomes: ReviewOutcome[]) => void;
+}) {
   const [selected, setSelected] = useState<ReviewOutcome[]>([]);
 
   const toggle = (outcome: ReviewOutcome) => {
@@ -22,25 +32,36 @@ export function TripReview({ onSubmit }: { onSubmit: (outcomes: ReviewOutcome[])
   };
 
   return (
-    <div className="rounded-xl2 border border-ink-100 bg-white p-5 shadow-soft">
-      <p className="text-base font-medium text-ink-800">今天哪裡最花時間？</p>
-      <p className="mt-1 text-xs text-ink-400">選一下，幫我下次抓得更準一點。</p>
-      <div className="mt-3 flex flex-wrap gap-2">
-        {OPTIONS.map((option) => (
-          <button
-            key={option}
-            type="button"
-            onClick={() => toggle(option)}
-            className={`rounded-full px-3.5 py-2 text-sm transition-colors ${
-              selected.includes(option) ? "bg-aqua-500 text-white" : "bg-aqua-50 text-aqua-700 hover:bg-aqua-100"
-            }`}
-          >
-            {REVIEW_OUTCOME_LABELS[option]}
-          </button>
-        ))}
+    <div className="fade-in flex min-h-[62vh] flex-col justify-between">
+      <p className="text-xs text-ink-300">{tripTitle}</p>
+
+      <div className="flex-1 py-8">
+        <p className="text-3xl font-semibold leading-snug tracking-tight text-ink-800">今天哪裡最花時間？</p>
+        <p className="mt-2 text-sm text-ink-400">選一下，幫我下次抓得更準一點。</p>
+
+        <div className="mt-8 space-y-2.5">
+          {OPTIONS.map((option) => {
+            const isSelected = selected.includes(option);
+            return (
+              <button
+                key={option}
+                type="button"
+                onClick={() => toggle(option)}
+                className={`w-full rounded-xl2 border px-4 py-3.5 text-left text-base transition-colors ${
+                  isSelected
+                    ? "border-aqua-400 bg-aqua-50 font-medium text-aqua-700"
+                    : "border-ink-100 text-ink-700 hover:bg-cream-100"
+                }`}
+              >
+                {REVIEW_OUTCOME_LABELS[option]}
+              </button>
+            );
+          })}
+        </div>
       </div>
-      <Button className="mt-4" fullWidth onClick={() => onSubmit(selected)} disabled={selected.length === 0}>
-        完成回顧
+
+      <Button size="lg" fullWidth onClick={() => onSubmit(selected)} disabled={selected.length === 0}>
+        完成
       </Button>
     </div>
   );

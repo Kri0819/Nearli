@@ -29,7 +29,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ServiceWorkerRegister />
         {/* App 畫布：桌面版置中並限制在手機閱讀寬度，手機版自然滿版 */}
         <div className="mx-auto flex min-h-[100dvh] w-full max-w-md flex-col bg-cream-100">
-          <main className="flex-1 px-4 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-[calc(1.25rem+env(safe-area-inset-top))]">
+          <main className="flex-1 px-6 pb-[calc(6.5rem+env(safe-area-inset-bottom))] pt-[calc(1.75rem+env(safe-area-inset-top))]">
             {children}
           </main>
           <BottomNav />

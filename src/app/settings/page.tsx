@@ -1,10 +1,10 @@
 "use client";
 
 import { useState } from "react";
+import { X } from "lucide-react";
 import { useSettings } from "@/hooks/useSettings";
 import { useNotifications } from "@/hooks/useNotifications";
 import { PageHeader } from "@/components/layout/PageHeader";
-import { ListItemSkeleton } from "@/components/common/Skeleton";
 import { TransportModeSelect } from "@/components/forms/TransportModeSelect";
 import { DurationInput } from "@/components/forms/DurationInput";
 import { Collapsible } from "@/components/common/Collapsible";
@@ -21,47 +21,39 @@ export default function SettingsPage() {
   const [newPrepName, setNewPrepName] = useState("");
 
   if (isLoading) {
-    return (
-      <div className="space-y-3">
-        <ListItemSkeleton />
-        <ListItemSkeleton />
-        <ListItemSkeleton />
-      </div>
-    );
+    return <div className="min-h-[40vh]" />;
   }
 
   return (
-    <div className="space-y-5">
-      <PageHeader title="設定" />
+    <div>
+      <PageHeader title="設定" compact />
 
-      <section>
-        <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">預設交通方式</h2>
+      <section className="border-b border-ink-100 py-4">
+        <h2 className="mb-3 text-xs font-medium uppercase tracking-wide text-ink-400">預設交通方式</h2>
         <TransportModeSelect
           value={settings.defaultTransportMode}
           onChange={(mode) => updateSettings({ ...settings, defaultTransportMode: mode })}
         />
       </section>
 
-      <section>
-        <h2 className="mb-2 text-xs font-medium uppercase tracking-wide text-ink-400">預設提前抵達 / 停車時間</h2>
-        <div className="space-y-3">
-          <DurationInput
-            label="預設提前抵達時間"
-            minutes={settings.defaultEarlyArrivalMinutes}
-            onChange={(m) => updateSettings({ ...settings, defaultEarlyArrivalMinutes: m })}
-          />
-          <DurationInput
-            label="預設停車時間"
-            minutes={settings.defaultParkingMinutes}
-            onChange={(m) => updateSettings({ ...settings, defaultParkingMinutes: m })}
-          />
-        </div>
+      <section className="space-y-3 border-b border-ink-100 py-4">
+        <h2 className="text-xs font-medium uppercase tracking-wide text-ink-400">預設提前抵達 / 停車時間</h2>
+        <DurationInput
+          label="預設提前抵達時間"
+          minutes={settings.defaultEarlyArrivalMinutes}
+          onChange={(m) => updateSettings({ ...settings, defaultEarlyArrivalMinutes: m })}
+        />
+        <DurationInput
+          label="預設停車時間"
+          minutes={settings.defaultParkingMinutes}
+          onChange={(m) => updateSettings({ ...settings, defaultParkingMinutes: m })}
+        />
       </section>
 
       <Collapsible title="常用出發地">
         <div className="space-y-2">
           {settings.frequentOrigins.map((origin) => (
-            <div key={origin.id} className="flex items-center justify-between rounded-xl2 border border-ink-100 px-3 py-2 text-sm">
+            <div key={origin.id} className="flex items-center justify-between py-1.5 text-sm">
               <div>
                 <p className="text-ink-700">{origin.label}</p>
                 <p className="text-xs text-ink-400">{origin.address}</p>
@@ -73,10 +65,10 @@ export default function SettingsPage() {
                     frequentOrigins: settings.frequentOrigins.filter((o) => o.id !== origin.id),
                   })
                 }
-                className="text-risk-500"
+                className="text-ink-300 hover:text-risk-500"
                 aria-label="刪除"
               >
-                ✕
+                <X size={16} />
               </button>
             </div>
           ))}
@@ -130,7 +122,7 @@ export default function SettingsPage() {
                   }
                   aria-label={`移除${name}`}
                 >
-                  ✕
+                  <X size={12} />
                 </button>
               </span>
             ))}
@@ -165,12 +157,12 @@ export default function SettingsPage() {
           <p className="text-xs text-warn-500">
             提醒僅在 App 開啟期間可靠觸發，關閉分頁或瀏覽器後無法保證準時推播。
           </p>
-          <div className="rounded-xl2 border border-ink-100 p-3 text-sm">
-            <p className="text-ink-700">瀏覽器通知權限：{PERMISSION_LABEL[permission]}</p>
+          <div className="flex items-center justify-between py-1 text-sm">
+            <span className="text-ink-700">瀏覽器通知權限：{PERMISSION_LABEL[permission]}</span>
             {permission !== "granted" && permission !== "unsupported" && (
-              <Button size="md" variant="secondary" className="mt-2" onClick={() => requestPermission()}>
-                開啟通知權限
-              </Button>
+              <button className="text-sm text-aqua-600" onClick={() => requestPermission()}>
+                開啟
+              </button>
             )}
           </div>
           {(
@@ -182,7 +174,7 @@ export default function SettingsPage() {
               ["nextStopAffected", "下一站時間受到影響"],
             ] as const
           ).map(([key, label]) => (
-            <label key={key} className="flex items-center justify-between text-sm text-ink-600">
+            <label key={key} className="flex items-center justify-between py-1 text-sm text-ink-600">
               {label}
               <input
                 type="checkbox"
@@ -209,6 +201,7 @@ export default function SettingsPage() {
       <Button
         variant="danger"
         fullWidth
+        className="mt-8"
         onClick={() => {
           if (confirm("確定要清除所有本機資料嗎？這個動作無法復原。")) {
             clearAllLocalData();
