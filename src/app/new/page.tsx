@@ -19,8 +19,8 @@ import { toDateKey, formatDateWithWeekday } from "@/lib/dateUtils";
 import { getSuggestedPreparationMinutes } from "@/lib/prepSuggestions";
 
 type Tab = "ai" | "manual";
-type WizardStep = 0 | 1 | 2 | 3;
-const STEP_COUNT = 4;
+type WizardStep = 0 | 1 | 2 | 3 | 4;
+const STEP_COUNT = 5;
 
 /** 步驟進度：幾個小圓點，安靜地表示「還有幾步」，不是表單裡的必填星號 */
 function StepDots({ step }: { step: WizardStep }) {
@@ -64,8 +64,8 @@ export default function NewTripPage() {
     router.push(`/trips/${draft.id}`);
   };
 
-  const step0Valid = draft.title.trim().length > 0 && draft.date.length > 0;
-  const step1Valid = orderedStops.length > 0;
+  const nameValid = draft.title.trim().length > 0;
+  const stopsValid = orderedStops.length > 0;
 
   return (
     <div>
@@ -108,39 +108,50 @@ export default function NewTripPage() {
         <div>
           <StepDots step={step} />
 
-          {/* Step 1：哪一天？ */}
+          {/* Step 1：旅程叫什麼？ */}
           {step === 0 && (
             <div className="fade-in">
+              <p className="text-2xl font-semibold tracking-tight text-ink-800">旅程叫什麼？</p>
+              <div className="mt-6">
+                <input
+                  value={draft.title}
+                  onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
+                  placeholder="例如：週六約會"
+                  autoFocus
+                  className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-3 text-lg text-ink-800 focus:border-aqua-400 focus:outline-none"
+                />
+              </div>
+              <Button size="lg" fullWidth className="mt-8" disabled={!nameValid} onClick={() => setStep(1)}>
+                下一步
+              </Button>
+            </div>
+          )}
+
+          {/* Step 2：哪一天？ */}
+          {step === 1 && (
+            <div className="fade-in">
+              <QuietBack onClick={() => setStep(0)} />
               <p className="text-2xl font-semibold tracking-tight text-ink-800">哪一天？</p>
-              <div className="mt-6 space-y-5">
+              <div className="mt-6">
                 <input
                   type="date"
                   value={draft.date}
                   onChange={(e) => setDraft((d) => ({ ...d, date: e.target.value }))}
                   className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-3 text-lg text-ink-800 focus:border-aqua-400 focus:outline-none"
                 />
-                <label className="block">
-                  <span className="mb-1 block text-sm text-ink-500">這趟行程叫什麼？</span>
-                  <input
-                    value={draft.title}
-                    onChange={(e) => setDraft((d) => ({ ...d, title: e.target.value }))}
-                    placeholder="例如：週六約會"
-                    className="w-full rounded-xl2 border border-ink-100 bg-white px-3 py-2.5 text-ink-800 focus:border-aqua-400 focus:outline-none"
-                  />
-                </label>
               </div>
-              <Button size="lg" fullWidth className="mt-8" disabled={!step0Valid} onClick={() => setStep(1)}>
+              <Button size="lg" fullWidth className="mt-8" disabled={!draft.date} onClick={() => setStep(2)}>
                 下一步
               </Button>
             </div>
           )}
 
-          {/* Step 2：第一站去哪？／下一站？ */}
-          {step === 1 && (
+          {/* Step 3：第一站去哪？／還要去哪？ */}
+          {step === 2 && (
             <div className="fade-in">
-              <QuietBack onClick={() => setStep(0)} />
+              <QuietBack onClick={() => setStep(1)} />
               <p className="text-2xl font-semibold tracking-tight text-ink-800">
-                {orderedStops.length === 0 ? "第一站去哪？" : "下一站？"}
+                {orderedStops.length === 0 ? "第一站去哪？" : "還要去哪？"}
               </p>
               <p className="mt-1 text-sm text-ink-400">{formatDateWithWeekday(draft.date)}</p>
 
@@ -184,18 +195,18 @@ export default function NewTripPage() {
                 {orderedStops.length === 0 ? "加第一站" : "再加一站"}
               </Button>
 
-              {step1Valid && (
-                <Button size="lg" fullWidth className="mt-3" onClick={() => setStep(2)}>
-                  這樣就好了
+              {stopsValid && (
+                <Button size="lg" fullWidth className="mt-3" onClick={() => setStep(3)}>
+                  不用再去別的地方了
                 </Button>
               )}
             </div>
           )}
 
-          {/* Step 3：出門前要做什麼？ */}
-          {step === 2 && (
+          {/* Step 4：出門前要做什麼？ */}
+          {step === 3 && (
             <div className="fade-in">
-              <QuietBack onClick={() => setStep(1)} />
+              <QuietBack onClick={() => setStep(2)} />
               <p className="text-2xl font-semibold tracking-tight text-ink-800">出門前要做什麼？</p>
               <p className="mt-1 text-sm text-ink-400">可以跳過，之後隨時可以加。</p>
               <div className="mt-6">
@@ -205,16 +216,16 @@ export default function NewTripPage() {
                   suggestMinutes={(name) => getSuggestedPreparationMinutes(name, trips)}
                 />
               </div>
-              <Button size="lg" fullWidth className="mt-8" onClick={() => setStep(3)}>
+              <Button size="lg" fullWidth className="mt-8" onClick={() => setStep(4)}>
                 下一步
               </Button>
             </div>
           )}
 
-          {/* Step 4：完成 */}
-          {step === 3 && (
+          {/* Step 5：完成 */}
+          {step === 4 && (
             <div className="fade-in">
-              <QuietBack onClick={() => setStep(2)} />
+              <QuietBack onClick={() => setStep(3)} />
               <p className="text-2xl font-semibold tracking-tight text-ink-800">都準備好了</p>
               <div className="mt-6 space-y-1 text-sm text-ink-500">
                 <p className="text-base font-medium text-ink-800">{draft.title}</p>
@@ -225,7 +236,7 @@ export default function NewTripPage() {
                 </p>
               </div>
               <Button size="lg" fullWidth className="mt-8" onClick={saveDraft}>
-                建立行程
+                出發
               </Button>
             </div>
           )}

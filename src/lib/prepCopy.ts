@@ -34,3 +34,21 @@ export function getTaskGoPhrase(taskName: string): string {
 export function getTaskDonePhrase(taskName: string): string {
   return TASK_PHRASES[taskName]?.done ?? "完成";
 }
+
+/**
+ * 目前這個事項的時間進度（0～1），只用來畫一條安靜的進度條，
+ * 不影響任何時間計算或資料——純粹是「還剩多久」這個資訊的視覺呈現。
+ * 尚未開始時，用「現在距離預定開始時間」推算，讓進度條在該開始的那一刻自然地往前走。
+ */
+export function computeTaskProgressRatio(
+  plannedStartAt: Date,
+  plannedEndAt: Date,
+  actualStartedAt: Date | null,
+  now: Date
+): number {
+  const start = actualStartedAt ?? plannedStartAt;
+  const totalMs = plannedEndAt.getTime() - start.getTime();
+  if (totalMs <= 0) return 1;
+  const elapsedMs = now.getTime() - start.getTime();
+  return Math.max(0, Math.min(1, elapsedMs / totalMs));
+}
