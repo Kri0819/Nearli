@@ -16,7 +16,10 @@ import {
   assessPreparationRisk,
   describeTaskOverrun,
 } from "@/lib/preparationTimeline";
-import { getTaskGoPhrase, getTaskDonePhrase, computeTaskProgressRatio } from "@/lib/prepCopy";
+import { Clock } from "lucide-react";
+import { getTaskGoPhrase, getTaskDonePhrase, computeTaskProgressRatio, getTimeOfDayGreeting } from "@/lib/prepCopy";
+import { getTaskIcon } from "@/lib/prepIcons";
+import { PreparationTaskPlan } from "@/lib/preparationTimeline";
 import { Button } from "@/components/common/Button";
 import { NearliMascot } from "@/components/home/NearliMascot";
 
@@ -51,6 +54,78 @@ function NowAction({ label }: { label: string }) {
     <div className="text-center">
       <p className="text-sm font-medium text-aqua-600">現在</p>
       <p className="mt-1 text-4xl font-semibold leading-tight tracking-tight text-ink-800 sm:text-5xl">{label}</p>
+    </div>
+  );
+}
+
+/**
+ * 遊戲風格的任務跑道：格子長短依照時間長短分配寬度，
+ * 小球沿著格子頂端緩慢移動，切換下一步時自然滑到下一格。
+ */
+function TaskCarousel({ tasks, activeTaskId, now }: { tasks: PreparationTaskPlan[]; activeTaskId: string; now: Date }) {
+  const total = tasks.reduce((sum, t) => sum + Math.max(1, t.estimatedMinutes), 0);
+
+  let cumulative = 0;
+  const segments = tasks.map((task) => {
+    const widthPct = (Math.max(1, task.estimatedMinutes) / total) * 100;
+    const startPct = cumulative;
+    cumulative += widthPct;
+    return { task, widthPct, startPct };
+  });
+
+  const activeSegment = segments.find((s) => s.task.taskId === activeTaskId);
+  let ballPct = 0;
+  if (activeSegment) {
+    const ratio = computeTaskProgressRatio(
+      activeSegment.task.plannedStartAt,
+      activeSegment.task.plannedEndAt,
+      activeSegment.task.actualStartedAt,
+      now
+    );
+    ballPct = activeSegment.startPct + activeSegment.widthPct * ratio;
+  }
+
+  return (
+    <div className="relative pt-10">
+      {/* 小球，沿著格子頂端緩慢移動，切換事件時自然滑過去 */}
+      <div
+        className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out"
+        style={{ left: `${ballPct}%` }}
+        aria-hidden
+      >
+        <NearliMascot size={48} />
+      </div>
+
+      <div className="flex gap-1">
+        {segments.map(({ task, widthPct }) => {
+          const Icon = getTaskIcon(task.name);
+          const isActive = task.taskId === activeTaskId;
+          const isDone = task.status === "completed";
+          return (
+            <div
+              key={task.taskId}
+              className="flex shrink-0 flex-col items-center"
+              style={{ width: `${widthPct}%`, minWidth: 52 }}
+            >
+              <div
+                className={`flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-xl2 px-1 ${
+                  isDone
+                    ? "bg-aqua-500 text-white"
+                    : isActive
+                      ? "bg-aqua-100 text-aqua-700"
+                      : "bg-ink-100 text-ink-400"
+                }`}
+              >
+                <Icon size={16} />
+                <span className="w-full truncate px-0.5 text-center text-[11px] font-medium leading-tight">
+                  {task.name}
+                </span>
+              </div>
+              <p className="mt-1 text-[11px] text-ink-400">{task.estimatedMinutes} 分鐘</p>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
@@ -194,24 +269,35 @@ export function NextStopCard({
     (stage === "preparing" && prepRisk && prepRisk.status !== "comfortable" && !overrunMessage && prepRisk.message) ||
     null;
 
+  const showCarousel = (stage === "ready_to_prep" || stage === "preparing") && prepPlans.length > 0 && activeTask;
+
   return (
     <div key={stage + (activeTask?.taskId ?? "")} className="fade-in flex min-h-[62vh] flex-col justify-between">
-      <p className="truncate text-xs text-ink-300">
-        {trip.title || "未命名行程"} · 第 {stopIndex + 1}／{totalStops} 站
-      </p>
+      <div>
+        <p className="text-lg font-medium text-ink-700">
+          {getTimeOfDayGreeting(now)}，{trip.title || "這趟旅程"}
+        </p>
+        <p className="mt-1.5 flex items-center gap-1.5 text-sm text-ink-500">
+          <Clock size={14} className="text-ink-400" />
+          {formatTime(stopPlan.targetArrivalAt)} 抵達 {stop.name || "目的地"}
+        </p>
+      </div>
 
-      <div className="flex flex-1 flex-col justify-center gap-4 py-10 text-center">
-        <div className="flex justify-center">
-          <NearliMascot size={104} />
-        </div>
+      <div className="flex flex-1 flex-col justify-center gap-4 py-8 text-center">
+        {!showCarousel && (
+          <div className="flex justify-center">
+            <NearliMascot size={104} />
+          </div>
+        )}
         <NowAction label={actionLabel} />
-        {ratio !== null && (
+        {showCarousel && activeTask && <TaskCarousel tasks={prepPlans} activeTaskId={activeTask.taskId} now={now} />}
+        {!showCarousel && ratio !== null && (
           <div className="mx-auto w-full max-w-[220px]">
             <ProgressBar ratio={ratio} />
           </div>
         )}
         {sub && <p className="text-lg text-ink-500">{sub}</p>}
-        {nextLabel && (
+        {!showCarousel && nextLabel && (
           <p className="text-sm text-ink-400">
             下一步 <span className="text-ink-600">{nextLabel}</span>
           </p>

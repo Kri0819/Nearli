@@ -35,6 +35,15 @@ export function getTaskDonePhrase(taskName: string): string {
   return TASK_PHRASES[taskName]?.done ?? "完成";
 }
 
+/** 依照現在時間給一句問候，早上/中午/晚上，語氣安靜自然 */
+export function getTimeOfDayGreeting(now: Date): string {
+  const hour = now.getHours();
+  if (hour < 5) return "夜深了";
+  if (hour < 12) return "早安";
+  if (hour < 18) return "午安";
+  return "晚安";
+}
+
 /**
  * 目前這個事項的時間進度（0～1），只用來畫一條安靜的進度條，
  * 不影響任何時間計算或資料——純粹是「還剩多久」這個資訊的視覺呈現。
