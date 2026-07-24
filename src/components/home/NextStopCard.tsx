@@ -58,12 +58,22 @@ function NowAction({ label }: { label: string }) {
   );
 }
 
+const TILE_PALETTE: Array<{ top: string; edge: string }> = [
+  { top: "bg-ink-100", edge: "bg-ink-200" },
+  { top: "bg-ok-50", edge: "bg-ok-100" },
+  { top: "bg-warn-50", edge: "bg-warn-100" },
+  { top: "bg-risk-50", edge: "bg-risk-100" },
+  { top: "bg-cream-200", edge: "bg-ink-200" },
+];
+
 /**
- * 遊戲風格的任務跑道：格子長短依照時間長短分配寬度，
- * 小球沿著格子頂端緩慢移動，切換下一步時自然滑到下一格。
+ * 遊戲風格的任務跑道：格子長短依照時間長短分配寬度，每一格做成有厚度的立體方塊
+ * （上面＋斜切的側邊），目前這一格離讀者最近（最低），越遠的格子微微抬高，
+ * 呼應參考圖裡「路是斜的」透視感。小球沿著格子頂端緩慢移動。
  */
 function TaskCarousel({ tasks, activeTaskId, now }: { tasks: PreparationTaskPlan[]; activeTaskId: string; now: Date }) {
   const total = tasks.reduce((sum, t) => sum + Math.max(1, t.estimatedMinutes), 0);
+  const activeIndex = tasks.findIndex((t) => t.taskId === activeTaskId);
 
   let cumulative = 0;
   const segments = tasks.map((task) => {
@@ -86,42 +96,48 @@ function TaskCarousel({ tasks, activeTaskId, now }: { tasks: PreparationTaskPlan
   }
 
   return (
-    <div className="relative pt-10">
-      {/* 小球，沿著格子頂端緩慢移動，切換事件時自然滑過去 */}
+    <div className="relative pt-12">
+      {/* 小球，沿著格子頂端緩慢移動，切換事件時自然滑過去；跟目前這格一樣站在最低點 */}
       <div
-        className="absolute top-0 -translate-x-1/2 transition-all duration-700 ease-out"
+        className="absolute top-2 -translate-x-1/2 transition-all duration-700 ease-out"
         style={{ left: `${ballPct}%` }}
         aria-hidden
       >
-        <NearliMascot size={48} />
+        <NearliMascot size={46} />
       </div>
 
-      <div className="flex gap-1">
-        {segments.map(({ task, widthPct }) => {
+      <div className="flex items-end">
+        {segments.map(({ task, widthPct }, i) => {
           const Icon = getTaskIcon(task.name);
-          const isActive = task.taskId === activeTaskId;
+          const isActive = i === activeIndex;
           const isDone = task.status === "completed";
+          const distance = activeIndex === -1 ? 0 : Math.min(Math.abs(i - activeIndex), 3);
+          const liftPx = distance * 7;
+          const palette = TILE_PALETTE[i % TILE_PALETTE.length];
+          const topClass = isDone ? "bg-aqua-500" : isActive ? "bg-aqua-100" : palette.top;
+          const edgeClass = isDone ? "bg-aqua-600" : isActive ? "bg-aqua-200" : palette.edge;
+
           return (
             <div
               key={task.taskId}
-              className="flex shrink-0 flex-col items-center"
-              style={{ width: `${widthPct}%`, minWidth: 52 }}
+              className={`flex shrink-0 flex-col items-center ${i > 0 ? "-ml-1.5" : ""}`}
+              style={{ width: `${widthPct}%`, minWidth: 56, transform: `translateY(-${liftPx}px)` }}
             >
-              <div
-                className={`flex h-14 w-full flex-col items-center justify-center gap-0.5 rounded-xl2 px-1 ${
-                  isDone
-                    ? "bg-aqua-500 text-white"
-                    : isActive
-                      ? "bg-aqua-100 text-aqua-700"
-                      : "bg-ink-100 text-ink-400"
-                }`}
-              >
-                <Icon size={16} />
-                <span className="w-full truncate px-0.5 text-center text-[11px] font-medium leading-tight">
-                  {task.name}
-                </span>
+              <Icon size={16} className={isActive ? "text-aqua-700" : "text-ink-400"} />
+              <span className={`mt-0.5 w-full truncate px-0.5 text-center text-[11px] font-medium leading-tight ${isActive ? "text-aqua-700" : "text-ink-500"}`}>
+                {task.name}
+              </span>
+
+              {/* 立體方塊：上面 + 斜切側邊，做出「路是斜的」透視厚度感 */}
+              <div className="mt-1.5 w-full">
+                <div className={`h-9 w-full rounded-t-xl2 ${topClass}`} />
+                <div
+                  className={`mx-auto h-2 w-[88%] rounded-b-lg ${edgeClass}`}
+                  style={{ transform: "skewX(-12deg) scaleX(0.94)" }}
+                />
               </div>
-              <p className="mt-1 text-[11px] text-ink-400">{task.estimatedMinutes} 分鐘</p>
+
+              <p className="mt-1.5 text-[11px] text-ink-400">{task.estimatedMinutes} 分鐘</p>
             </div>
           );
         })}

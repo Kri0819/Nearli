@@ -8,9 +8,9 @@ export const APP_CONFIG = {
   displayName: "Nearli",
   shortName: "Nearli",
   /** 版本號 */
-  version: "0.1.10",
+  version: "0.1.11",
   /** 版本代稱 */
-  versionCodename: "任務跑道",
+  versionCodename: "圓球與斜面修正",
   /**
    * localStorage 資料結構版本，用於未來遷移。
    * v0.1.1：Trip 新增 actualPrepStartTime 欄位
@@ -24,6 +24,7 @@ export const APP_CONFIG = {
    * v0.1.8：產品體驗重新定義（陪伴出門），純 UX/Layout/Interaction 更新，資料結構無變動
    * v0.1.9：新增吉祥物角色（純視覺），資料結構無變動
    * v0.1.10：首頁新增遊戲風格任務跑道（純視覺），資料結構無變動
+   * v0.1.11：吉祥物改為正圓形、任務跑道加上立體斜面與高低錯落（純視覺），資料結構無變動
    */
   storageSchemaVersion: 4,
   /** 預設語言 */
