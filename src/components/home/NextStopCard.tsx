@@ -18,6 +18,7 @@ import {
 } from "@/lib/preparationTimeline";
 import { getTaskGoPhrase, getTaskDonePhrase, computeTaskProgressRatio } from "@/lib/prepCopy";
 import { Button } from "@/components/common/Button";
+import { NearliMascot } from "@/components/home/NearliMascot";
 
 type Stage = "future" | "before_prep" | "ready_to_prep" | "preparing" | "awaiting_departure" | "departed";
 
@@ -47,7 +48,7 @@ function ProgressBar({ ratio }: { ratio: number }) {
 /** 出門旅程中「現在」這一件事：小標籤 + 巨大的動作名稱，呼應 Timeline 的節點名稱 */
 function NowAction({ label }: { label: string }) {
   return (
-    <div>
+    <div className="text-center">
       <p className="text-sm font-medium text-aqua-600">現在</p>
       <p className="mt-1 text-4xl font-semibold leading-tight tracking-tight text-ink-800 sm:text-5xl">{label}</p>
     </div>
@@ -121,7 +122,10 @@ export function NextStopCard({
           <p className="mt-0.5 text-lg font-medium text-ink-700">{trip.title || "未命名行程"}</p>
         </div>
 
-        <div className="flex-1 py-10">
+        <div className="flex-1 py-10 text-center">
+          <div className="mb-4 flex justify-center">
+            <NearliMascot size={84} />
+          </div>
           <p className="text-3xl font-semibold leading-snug tracking-tight text-ink-800">現在不用準備。</p>
           {countdownTarget && (
             <p className="mt-2 text-lg text-ink-500">距離開始還有{describeDayCountdown(countdownTarget, now)}。</p>
@@ -196,9 +200,16 @@ export function NextStopCard({
         {trip.title || "未命名行程"} · 第 {stopIndex + 1}／{totalStops} 站
       </p>
 
-      <div className="flex flex-1 flex-col justify-center gap-4 py-10">
+      <div className="flex flex-1 flex-col justify-center gap-4 py-10 text-center">
+        <div className="flex justify-center">
+          <NearliMascot size={104} />
+        </div>
         <NowAction label={actionLabel} />
-        {ratio !== null && <ProgressBar ratio={ratio} />}
+        {ratio !== null && (
+          <div className="mx-auto w-full max-w-[220px]">
+            <ProgressBar ratio={ratio} />
+          </div>
+        )}
         {sub && <p className="text-lg text-ink-500">{sub}</p>}
         {nextLabel && (
           <p className="text-sm text-ink-400">

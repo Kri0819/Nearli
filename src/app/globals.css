@@ -84,6 +84,21 @@ body {
   }
 }
 
+/* 吉祥物輕輕上下晃動，增加可愛感，但幅度很小不會分心 */
+.mascot-bob {
+  animation: mascot-bob 2.6s ease-in-out infinite;
+}
+
+@keyframes mascot-bob {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-4px);
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   * {
     animation-duration: 0.001ms !important;
